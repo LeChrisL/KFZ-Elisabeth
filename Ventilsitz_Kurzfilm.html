@@ -153,12 +153,14 @@ const SC=[
  {t:"Und unser Golf?", on:["gas","rim"], lift:true,
   p:"Schließt das Auslassventil nicht mehr vollständig, fehlt der Kontakt zum Sitz. Die Wärme kann nicht mehr abfließen. Gleichzeitig strömt heißes Verbrennungsgas durch den schmalen Spalt. Der Tellerrand überhitzt und brennt weg. Das Ventil ist verbrannt."}
 ];
-let i=-1, playing=false, sound=true, timer=null, animT=null;
+let i=-1, playing=false, sound=true, timer=null, animT=null, noAudio=false;
 const cap=document.getElementById('cap'), chips=document.getElementById('chips'), svg=document.querySelector('.screen svg');
 const playB=document.getElementById('play'), sndB=document.getElementById('snd');
-const canSpeak='speechSynthesis' in window;
-if(!canSpeak){sound=false;sndB.textContent='Ton nicht verfügbar';sndB.disabled=true}
-function voice(){try{const v=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.startsWith('de'));return v[0]||null}catch(e){return null}}
+/* Eigene Tonspur: Dateien ventilsitz_1.mp3 bis ventilsitz_6.mp3 (oder .m4a) im selben Ordner wie diese Seite.
+   Fehlen sie, läuft der Film ohne Ton mit Lesezeit. */
+const EXT=['mp3','m4a'];
+const player=new Audio(); player.preload='auto';
+function noSound(){noAudio=true;sound=false;sndB.textContent='Ohne Ton';sndB.disabled=true;sndB.setAttribute('aria-pressed','false')}
 function chipsDraw(){chips.innerHTML=SC.map((_,k)=>`<span class="${k<i?'done':k===i?'on':''}"></span>`).join('')}
 function startScreen(){
   cap.innerHTML=`<h2>Ventilsitz: dicht und kühl</h2><p>Sechs kurze Szenen. Drück auf „Film starten“. Du kannst jederzeit anhalten, zurück- oder weiterspringen.</p>`;
@@ -170,8 +172,9 @@ function clearAll(){
   const f=document.getElementById('wface'); f.setAttribute('x2',188); f.setAttribute('y2',172);
   document.getElementById('wtext').textContent='Sitzbreite ca. 1,2–2 mm';
 }
+function stopAll(){clearTimeout(timer);try{player.pause()}catch(e){}player.onended=null;player.onerror=null}
 function scene(k){
-  clearTimeout(timer); if(canSpeak) speechSynthesis.cancel();
+  stopAll();
   if(k>=SC.length) return end();
   i=Math.max(0,k); const s=SC[i]; clearAll();
   s.on.forEach(id=>{const e=document.getElementById(id); e.classList.add('show'); if(id==='rim') e.style.opacity=.85});
@@ -179,34 +182,41 @@ function scene(k){
   if(s.anim==='width') widthAnim();
   cap.innerHTML=`<span class="tag">Szene ${i+1} von ${SC.length}</span><h2>${s.t}</h2><p>${s.p}</p>`;
   chipsDraw();
-  if(playing) speakThenNext(s.p);
+  if(playing) runScene();
 }
 function widthAnim(){
   const f=document.getElementById('wface'), t=document.getElementById('wtext'); let st=0;
   const states=[[188,172,'Sitzbreite ca. 1,2–2 mm'],[172,156,'zu schmal: Ventil wird zu heiß'],[188,172,'richtig'],[194,178,'zu breit: Ablagerungen, undicht']];
   animT=setInterval(()=>{st=(st+1)%states.length;const [x,y,l]=states[st];f.setAttribute('x2',x);f.setAttribute('y2',y);t.textContent=l},3500);
 }
-function speakThenNext(text){
-  const words=text.split(/\s+/).length, fallback=Math.max(9000,words*420)+1500;
-  if(sound&&canSpeak){
-    try{const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';const v=voice();if(v)u.voice=v;u.rate=.95;
-      let doneFlag=false;u.onend=()=>{if(doneFlag)return;doneFlag=true;clearTimeout(timer);if(playing)timer=setTimeout(()=>scene(i+1),1400)};
-      speechSynthesis.speak(u); timer=setTimeout(()=>{doneFlag=true;if(playing)scene(i+1)},fallback+8000);
-    }catch(e){timer=setTimeout(()=>scene(i+1),fallback)}
-  } else timer=setTimeout(()=>scene(i+1),fallback);
+function readTime(){const w=SC[i].p.split(/\s+/).length;return Math.max(10000,w*500)+1500}
+function next(){if(playing) timer=setTimeout(()=>scene(i+1),1200)}
+function runScene(resume){
+  if(!(sound&&!noAudio)){timer=setTimeout(()=>scene(i+1),readTime());return}
+  if(resume&&player.src&&player.currentTime>0){player.play().catch(()=>{noSound();runScene()});return}
+  let e=0, sc=i;
+  const tryNext=()=>{
+    if(sc!==i) return;
+    if(e>=EXT.length){noSound();runScene();return}
+    player.onerror=()=>{e++;tryNext()};
+    player.onended=()=>{if(sc===i) next()};
+    player.src='ventilsitz_'+(sc+1)+'.'+EXT[e];
+    player.play().catch(err=>{ if(err&&err.name==='NotAllowedError'){noSound();runScene()} });
+  };
+  tryNext();
 }
 function end(){
-  playing=false; playB.textContent='Nochmal ansehen'; clearAll(); i=SC.length; chipsDraw();
+  stopAll(); playing=false; playB.textContent='Nochmal ansehen'; clearAll(); i=SC.length; chipsDraw();
   document.getElementById('seat').classList.add('show');document.getElementById('cuts').classList.add('show');
   cap.innerHTML=`<span class="tag">Jetzt du</span><h2>Ab ins Heft</h2><p>Bearbeite im AH S. 38 die Aufgabe 5. Schau dir dazu die Grafik auf der Stationskarte an.</p><p>Fehlerbaum, Kasten Station 4: Warum muss das Ventil richtig auf dem Sitz aufliegen, damit es nicht verbrennt?</p>`;
 }
 playB.onclick=()=>{
   if(i>=SC.length||i<0){playing=true;playB.textContent='Pause';scene(0);return}
   playing=!playing; playB.textContent=playing?'Pause':'Weiter abspielen';
-  if(playing) speakThenNext(SC[i].p); else {clearTimeout(timer); if(canSpeak) speechSynthesis.cancel();}
+  if(playing) runScene(true); else stopAll();
 };
 document.getElementById('next').onclick=()=>scene(i<0?0:i+1);
 document.getElementById('prev').onclick=()=>scene(Math.max(0,i-1));
-sndB.onclick=()=>{sound=!sound;sndB.textContent=sound?'Ton an':'Ton aus';sndB.setAttribute('aria-pressed',sound);if(!sound&&canSpeak)speechSynthesis.cancel()};
+sndB.onclick=()=>{sound=!sound;sndB.textContent=sound?'Ton an':'Ton aus';sndB.setAttribute('aria-pressed',sound);if(!sound){try{player.pause()}catch(e){}; if(playing){stopAll();runScene()}}};
 startScreen();
 </script>
