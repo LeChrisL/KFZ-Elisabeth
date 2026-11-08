@@ -1,0 +1,212 @@
+<title>Ventilsitz Kurzfilm</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one cross-section drawing, scenes change what is highlighted; caption below like a subtitle */
+:root{
+  --bg:#eef0f2; --panel:#ffffff; --ink:#1E1E2E; --muted:#5b6170; --line:#d3d7dd;
+  --accent:#E8533A; --teal:#2A9D8F;
+  --steel:#c9cfd6; --steelEdge:#6b7380; --head:#dfe3e8; --ring:#b9c2cc; --cool:#cfe9e6; --chamber:#f6e6e1;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15161d; --panel:#1f2029; --ink:#eceef2; --muted:#a3a8b5; --line:#343644;
+  --accent:#f0694f; --teal:#3bb5a6;
+  --steel:#6f7884; --steelEdge:#b4bcc6; --head:#2c2f3a; --ring:#474c58; --cool:#1d3b38; --chamber:#3a2622; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15161d; --panel:#1f2029; --ink:#eceef2; --muted:#a3a8b5; --line:#343644;
+  --accent:#f0694f; --teal:#3bb5a6;
+  --steel:#6f7884; --steelEdge:#b4bcc6; --head:#2c2f3a; --ring:#474c58; --cool:#1d3b38; --chamber:#3a2622; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px}
+.wrap{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-size:2.1rem;margin:0;text-wrap:balance}
+.tag{font-family:var(--f-mono);font-size:.8rem;letter-spacing:1px;text-transform:uppercase;color:var(--accent)}
+.screen{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.screen svg{display:block;width:100%;height:auto;max-width:100%}
+.cap{padding:14px 18px;border-top:1px solid var(--line);min-height:120px;display:flex;flex-direction:column;gap:6px}
+.cap h2{font-family:var(--f-display);font-size:1.5rem;margin:0}
+.cap p{margin:0;max-width:70ch}
+.ctrl{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ctrl button{font:600 1rem var(--f-body);padding:12px 18px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;min-height:48px}
+.ctrl button.main{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.ctrl button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chips{display:flex;gap:6px;flex:1;min-width:160px}
+.chips span{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.chips span.on{background:var(--accent)} .chips span.done{background:var(--teal)}
+.lbl{font-family:var(--f-body);font-size:11px;fill:var(--muted)}
+.lblB{font-family:var(--f-mono);font-size:12px;font-weight:600}
+.hl{opacity:0;transition:opacity .5s}
+.show{opacity:1}
+#valve{transition:transform 1.2s ease}
+.lift #valve{transform:translateY(7px)}
+.flow{stroke-dasharray:6 7;animation:run 1s linear infinite}
+@keyframes run{to{stroke-dashoffset:-13}}
+@media (prefers-reduced-motion:reduce){.flow{animation:none}#valve{transition:none}.hl{transition:none}}
+.end{padding:18px;display:flex;flex-direction:column;gap:10px}
+</style>
+
+<div class="wrap">
+  <header><h1>Der Ventilsitz</h1><span class="tag">Station 4 · Kurzfilm, ca. 3 Min.</span></header>
+  <div class="screen">
+    <svg viewBox="0 0 400 250" role="img" aria-label="Halbschnitt durch Auslassventil und Ventilsitz im Zylinderkopf">
+      <defs>
+        <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--steelEdge)" stroke-width=".6" opacity=".45"/></pattern>
+        <marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--accent)"/></marker>
+        <marker id="ahT" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--teal)"/></marker>
+      </defs>
+      <rect x="0" y="188" width="400" height="62" fill="var(--chamber)"/>
+      <text class="lbl" x="330" y="214">Brennraum</text>
+      <text class="lbl" x="66" y="40">Auslasskanal</text>
+      <!-- Zylinderkopf -->
+      <path d="M148,0 L400,0 L400,188 L248,188 L188,172 L158,142 L148,104 Z" fill="var(--head)"/>
+      <path d="M148,0 L400,0 L400,188 L248,188 L188,172 L158,142 L148,104 Z" fill="url(#hatch)" stroke="var(--steelEdge)" stroke-width="1"/>
+      <!-- Ventilsitzring -->
+      <path d="M147,96 L232,96 L232,183.7 L188,172 L158,142 L148,104 Z" fill="var(--ring)" stroke="var(--steelEdge)" stroke-width="1"/>
+      <text class="lbl" x="196" y="114">Sitzring</text>
+      <rect x="292" y="34" width="82" height="62" rx="10" fill="var(--cool)" stroke="var(--teal)" stroke-width="1.2"/>
+      <text class="lbl" x="304" y="70">Kühlmittel</text>
+      <text class="lbl" x="306" y="178">Zylinderkopf</text>
+      <!-- Ventil -->
+      <line x1="30" y1="0" x2="30" y2="200" stroke="var(--muted)" stroke-width=".8" stroke-dasharray="8 3 2 3"/>
+      <g id="valve">
+        <path d="M22,0 L38,0 L38,90 Q40,128 158,142 L188,172 L188,184 L22,184 Z" fill="var(--steel)" stroke="var(--steelEdge)" stroke-width="1.2"/>
+        <path id="rim" class="hl" d="M150,141 L158,142 L188,172 L188,184 L168,184 Z" fill="var(--accent)" opacity="0"/>
+        <text class="lbl" x="70" y="170">Auslassventil</text>
+      </g>
+      <!-- Szene 1: Wärme -->
+      <g id="heat" class="hl">
+        <path class="flow" d="M150,165 Q190,140 220,118 Q260,92 290,72" fill="none" stroke="var(--accent)" stroke-width="4" marker-end="url(#ah)"/>
+        <text class="lblB" x="236" y="132" fill="var(--accent)">ca. 3/4 über den Sitz</text>
+        <path class="flow" d="M30,150 L30,8" fill="none" stroke="var(--accent)" stroke-width="2" marker-end="url(#ah)"/>
+        <text class="lblB" x="44" y="80" fill="var(--accent)">ca. 1/4 über Schaft</text>
+        <text class="lblB" x="44" y="94" fill="var(--accent)">und Führung</text>
+        <text class="lblB" x="40" y="212" fill="var(--accent)">bis ca. 800 °C</text>
+      </g>
+      <!-- Szene 2: 45° -->
+      <g id="seat" class="hl">
+        <line x1="158" y1="142" x2="188" y2="172" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>
+        <line x1="158" y1="142" x2="186" y2="142" stroke="var(--ink)" stroke-width=".8" stroke-dasharray="3 2"/>
+        <path d="M176,142 A18,18 0 0,1 170.7,154.7" fill="none" stroke="var(--ink)" stroke-width="1"/>
+        <text class="lblB" x="190" y="148" fill="var(--ink)">45°</text>
+      </g>
+      <!-- Szene 3: Korrekturwinkel -->
+      <g id="cuts" class="hl">
+        <line x1="148" y1="104" x2="158" y2="142" stroke="var(--teal)" stroke-width="5" stroke-linecap="round"/>
+        <line x1="188" y1="172" x2="248" y2="188" stroke="var(--teal)" stroke-width="5" stroke-linecap="round"/>
+        <line x1="148" y1="104" x2="172" y2="104" stroke="var(--ink)" stroke-width=".8" stroke-dasharray="3 2"/>
+        <path d="M166,104 A18,18 0 0,1 152.7,121.4" fill="none" stroke="var(--ink)" stroke-width="1"/>
+        <text class="lblB" x="143" y="94" text-anchor="end" fill="var(--teal)">Kanalseite 75°</text>
+        <line x1="188" y1="172" x2="216" y2="172" stroke="var(--ink)" stroke-width=".8" stroke-dasharray="3 2"/>
+        <path d="M210,172 A22,22 0 0,1 209.3,177.7" fill="none" stroke="var(--ink)" stroke-width="1"/>
+        <text class="lblB" x="222" y="172" fill="var(--teal)">15°</text>
+        <text class="lbl" x="226" y="204">Brennraumseite</text>
+      </g>
+      <!-- Szene 4: Sitzbreite -->
+      <g id="width" class="hl">
+        <line id="wface" x1="158" y1="142" x2="188" y2="172" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>
+        <line x1="168" y1="128" x2="202" y2="162" stroke="var(--ink)" stroke-width="1"/>
+        <line x1="158" y1="142" x2="166" y2="126" stroke="var(--ink)" stroke-width=".6"/>
+        <line x1="188" y1="172" x2="204" y2="160" stroke="var(--ink)" stroke-width=".6"/>
+        <text id="wtext" class="lblB" x="206" y="140" fill="var(--ink)">Sitzbreite ca. 1,2–2 mm</text>
+      </g>
+      <!-- Szene 6: Gas strömt durch den Spalt -->
+      <g id="gas" class="hl">
+        <path class="flow" d="M260,232 Q210,214 194,182 L166,152 Q140,118 96,60" fill="none" stroke="var(--accent)" stroke-width="3.5" marker-end="url(#ah)"/>
+        <text class="lblB" x="120" y="244" fill="var(--accent)">heißes Gas strömt durch den Spalt</text>
+      </g>
+      <!-- Tragbild (Draufsicht) -->
+      <g id="pattern" class="hl" transform="translate(290,108)">
+        <circle cx="45" cy="45" r="42" fill="var(--steel)" stroke="var(--steelEdge)"/>
+        <circle cx="45" cy="45" r="34" fill="none" stroke="var(--teal)" stroke-width="7"/>
+        <circle cx="45" cy="45" r="8" fill="var(--steelEdge)"/>
+        <text class="lbl" x="2" y="104">Tragbild: geschlossener Ring</text>
+      </g>
+    </svg>
+    <div class="cap" id="cap"></div>
+  </div>
+  <div class="ctrl">
+    <button id="prev" aria-label="Szene zurück">Zurück</button>
+    <button id="play" class="main">Film starten</button>
+    <button id="next" aria-label="Nächste Szene">Weiter</button>
+    <button id="snd" aria-pressed="true">Ton an</button>
+    <div class="chips" id="chips"></div>
+  </div>
+</div>
+
+<script>
+const SC=[
+ {t:"Wohin mit der Wärme?", on:["heat"],
+  p:"Das Auslassventil wird im Betrieb bis etwa 800 Grad heiß. Etwa drei Viertel seiner Wärme gibt es über den Ventilsitz an den Zylinderkopf ab, von dort geht sie ins Kühlmittel. Nur etwa ein Viertel fließt über den Schaft und die Ventilführung ab."},
+ {t:"Der Sitzwinkel: meist 45 Grad", on:["seat"],
+  p:"Ventilteller und Sitzring berühren sich auf einer schrägen Fläche, meist im Winkel von 45 Grad. Durch die Schräge zentriert sich das Ventil beim Schließen selbst und wird fest an den Sitz gepresst. So dichtet es den Brennraum ab und gibt gleichzeitig seine Wärme ab."},
+ {t:"Die Korrekturwinkel: 15 und 75 Grad", on:["seat","cuts"],
+  p:"Beim Nacharbeiten fräst die Werkstatt nicht nur die 45-Grad-Fläche. Mit zwei weiteren Fräsern, meist 15 Grad auf der Brennraumseite und 75 Grad auf der Kanalseite, wird die Sitzfläche schmaler gemacht und so verschoben, dass sie mittig auf dem Ventilteller liegt."},
+ {t:"Die Sitzbreite", on:["width"], anim:"width",
+  p:"Die Sitzbreite beträgt meist etwa 1,2 bis 2 Millimeter, genaue Werte stehen in den Herstellerangaben. Ist der Sitz zu schmal, kann das Ventil zu wenig Wärme abgeben und wird zu heiß. Ist er zu breit, ist die Flächenpressung gering. Dann bleiben Ölkohle und Verbrennungsrückstände haften, und das Ventil dichtet schlecht."},
+ {t:"Das Tragbild prüfen", on:["pattern","seat"],
+  p:"Ob Ventil und Sitz gut zusammenpassen, zeigt das Tragbild. Dazu streicht man dünn Tuschierfarbe auf den Ventilteller, setzt das Ventil kurz in den Sitz und dreht es etwas. Gut ist ein geschlossener, gleichmäßig breiter Ring mittig auf der Sitzfläche des Ventils."},
+ {t:"Und unser Golf?", on:["gas","rim"], lift:true,
+  p:"Schließt das Auslassventil nicht mehr vollständig, fehlt der Kontakt zum Sitz. Die Wärme kann nicht mehr abfließen. Gleichzeitig strömt heißes Verbrennungsgas durch den schmalen Spalt. Der Tellerrand überhitzt und brennt weg. Das Ventil ist verbrannt."}
+];
+let i=-1, playing=false, sound=true, timer=null, animT=null;
+const cap=document.getElementById('cap'), chips=document.getElementById('chips'), svg=document.querySelector('.screen svg');
+const playB=document.getElementById('play'), sndB=document.getElementById('snd');
+const canSpeak='speechSynthesis' in window;
+if(!canSpeak){sound=false;sndB.textContent='Ton nicht verfügbar';sndB.disabled=true}
+function voice(){try{const v=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.startsWith('de'));return v[0]||null}catch(e){return null}}
+function chipsDraw(){chips.innerHTML=SC.map((_,k)=>`<span class="${k<i?'done':k===i?'on':''}"></span>`).join('')}
+function startScreen(){
+  cap.innerHTML=`<h2>Ventilsitz: dicht und kühl</h2><p>Sechs kurze Szenen. Drück auf „Film starten“. Du kannst jederzeit anhalten, zurück- oder weiterspringen.</p>`;
+  chipsDraw();
+}
+function clearAll(){
+  ['heat','seat','cuts','width','gas','pattern','rim'].forEach(id=>{const e=document.getElementById(id);e.classList.remove('show');if(id==='rim')e.style.opacity=0});
+  svg.classList.remove('lift'); clearInterval(animT);
+  const f=document.getElementById('wface'); f.setAttribute('x2',188); f.setAttribute('y2',172);
+  document.getElementById('wtext').textContent='Sitzbreite ca. 1,2–2 mm';
+}
+function scene(k){
+  clearTimeout(timer); if(canSpeak) speechSynthesis.cancel();
+  if(k>=SC.length) return end();
+  i=Math.max(0,k); const s=SC[i]; clearAll();
+  s.on.forEach(id=>{const e=document.getElementById(id); e.classList.add('show'); if(id==='rim') e.style.opacity=.85});
+  if(s.lift) svg.classList.add('lift');
+  if(s.anim==='width') widthAnim();
+  cap.innerHTML=`<span class="tag">Szene ${i+1} von ${SC.length}</span><h2>${s.t}</h2><p>${s.p}</p>`;
+  chipsDraw();
+  if(playing) speakThenNext(s.p);
+}
+function widthAnim(){
+  const f=document.getElementById('wface'), t=document.getElementById('wtext'); let st=0;
+  const states=[[188,172,'Sitzbreite ca. 1,2–2 mm'],[172,156,'zu schmal: Ventil wird zu heiß'],[188,172,'richtig'],[194,178,'zu breit: Ablagerungen, undicht']];
+  animT=setInterval(()=>{st=(st+1)%states.length;const [x,y,l]=states[st];f.setAttribute('x2',x);f.setAttribute('y2',y);t.textContent=l},3500);
+}
+function speakThenNext(text){
+  const words=text.split(/\s+/).length, fallback=Math.max(9000,words*420)+1500;
+  if(sound&&canSpeak){
+    try{const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';const v=voice();if(v)u.voice=v;u.rate=.95;
+      let doneFlag=false;u.onend=()=>{if(doneFlag)return;doneFlag=true;clearTimeout(timer);if(playing)timer=setTimeout(()=>scene(i+1),1400)};
+      speechSynthesis.speak(u); timer=setTimeout(()=>{doneFlag=true;if(playing)scene(i+1)},fallback+8000);
+    }catch(e){timer=setTimeout(()=>scene(i+1),fallback)}
+  } else timer=setTimeout(()=>scene(i+1),fallback);
+}
+function end(){
+  playing=false; playB.textContent='Nochmal ansehen'; clearAll(); i=SC.length; chipsDraw();
+  document.getElementById('seat').classList.add('show');document.getElementById('cuts').classList.add('show');
+  cap.innerHTML=`<span class="tag">Jetzt du</span><h2>Ab ins Heft</h2><p>Bearbeite im AH S. 38 die Aufgabe 5. Schau dir dazu die Grafik auf der Stationskarte an.</p><p>Fehlerbaum, Kasten Station 4: Warum muss das Ventil richtig auf dem Sitz aufliegen, damit es nicht verbrennt?</p>`;
+}
+playB.onclick=()=>{
+  if(i>=SC.length||i<0){playing=true;playB.textContent='Pause';scene(0);return}
+  playing=!playing; playB.textContent=playing?'Pause':'Weiter abspielen';
+  if(playing) speakThenNext(SC[i].p); else {clearTimeout(timer); if(canSpeak) speechSynthesis.cancel();}
+};
+document.getElementById('next').onclick=()=>scene(i<0?0:i+1);
+document.getElementById('prev').onclick=()=>scene(Math.max(0,i-1));
+sndB.onclick=()=>{sound=!sound;sndB.textContent=sound?'Ton an':'Ton aus';sndB.setAttribute('aria-pressed',sound);if(!sound&&canSpeak)speechSynthesis.cancel()};
+startScreen();
+</script>
