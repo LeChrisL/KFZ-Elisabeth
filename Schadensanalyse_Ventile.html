@@ -1,0 +1,176 @@
+<title>Schadensanalyse Ventile</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one card at a time, like a damage report on the workbench; big tap targets for iPad */
+:root{
+  --bg:#eef0f2; --panel:#ffffff; --ink:#1E1E2E; --muted:#5b6170; --line:#d3d7dd;
+  --accent:#E8533A; --ok:#2A9D8F; --okbg:#e3f3f1; --badbg:#fbe7e3;
+  --steel:#9aa3ad; --steel2:#c9cfd6; --soot:#2b2118; --heat:#b0573a; --heat2:#5a6fa8;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15161d; --panel:#1f2029; --ink:#eceef2; --muted:#a3a8b5; --line:#343644;
+  --accent:#f0694f; --ok:#3bb5a6; --okbg:#173330; --badbg:#3a1f1a;
+  --steel:#8a939e; --steel2:#5b636e; --soot:#0c0906; --heat:#d27352; --heat2:#7f93cc; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15161d; --panel:#1f2029; --ink:#eceef2; --muted:#a3a8b5; --line:#343644;
+  --accent:#f0694f; --ok:#3bb5a6; --okbg:#173330; --badbg:#3a1f1a;
+  --steel:#8a939e; --steel2:#5b636e; --soot:#0c0906; --heat:#d27352; --heat2:#7f93cc; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-size:2.2rem;margin:0;letter-spacing:.5px;text-wrap:balance}
+.score{font-family:var(--f-mono);font-size:1rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.progress{display:flex;gap:6px}
+.progress span{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.progress span.done{background:var(--ok)}
+.progress span.now{background:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;display:grid;grid-template-columns:260px 1fr;gap:24px}
+@media (max-width:640px){.card{grid-template-columns:1fr}}
+.fig{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.fig svg{width:100%;max-width:260px;height:auto}
+.fig small{color:var(--muted);font-size:.85rem;text-align:center}
+.tag{font-family:var(--f-mono);font-size:.8rem;letter-spacing:1px;text-transform:uppercase;color:var(--accent)}
+.q{min-width:0;display:flex;flex-direction:column;gap:12px}
+.q h2{font-family:var(--f-display);font-size:1.6rem;margin:0;text-wrap:balance}
+.opts{display:flex;flex-direction:column;gap:10px}
+button.opt{font:inherit;text-align:left;padding:14px 16px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;min-height:52px}
+button.opt:hover{border-color:var(--muted)}
+button.opt:focus-visible,button.main:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.opt.right{border-color:var(--ok);background:var(--okbg)}
+button.opt.wrong{border-color:var(--accent);background:var(--badbg)}
+button.opt:disabled{cursor:default}
+.fb{padding:12px 14px;border-radius:8px;font-size:1rem}
+.fb.ok{background:var(--okbg)} .fb.no{background:var(--badbg)}
+button.main{font:600 1.1rem var(--f-body);padding:14px 22px;border-radius:8px;border:0;background:var(--ink);color:var(--panel);cursor:pointer;align-self:flex-start}
+.found{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.found div{border:1px solid var(--line);border-radius:8px;padding:10px;font-size:.95rem}
+.found b{display:block;font-family:var(--f-display);font-size:1.15rem}
+.intro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.intro p{margin:0;max-width:62ch}
+@media (prefers-reduced-motion:no-preference){.card,.intro{animation:in .25s ease-out}}
+@keyframes in{from{transform:translateY(6px)}to{transform:none}}
+</style>
+
+<div class="wrap">
+  <header><h1>Schadensanalyse Ventile</h1><span class="score" id="score">0 Punkte</span></header>
+  <div class="progress" id="prog"></div>
+  <div id="stage"></div>
+</div>
+
+<script>
+const S = {
+  stem:`<rect x="92" y="8" width="16" height="150" fill="var(--steel2)" stroke="var(--muted)" stroke-width="1.5"/>
+        <rect x="92" y="8" width="16" height="14" fill="var(--steel)" stroke="var(--muted)" stroke-width="1.5"/>`,
+  head:`<path d="M92,150 Q92,190 40,206 L32,214 L32,226 L168,226 L168,214 L160,206 Q108,190 108,150 Z" fill="var(--steel2)" stroke="var(--muted)" stroke-width="1.5"/>`
+};
+const draw = {
+  verkokt:`<svg viewBox="0 0 200 240" role="img" aria-label="Ventil mit schwarzen Ablagerungen am Hals">${S.stem}${S.head}
+    <path d="M88,132 q-8,10 -4,22 q-14,10 -20,26 q-14,6 -22,18 q14,2 26,-2 q10,-8 20,-10 q4,-12 6,-24 q2,-14 -6,-30Z" fill="var(--soot)"/>
+    <path d="M112,128 q8,12 4,26 q12,10 22,24 q16,8 22,20 q-16,2 -28,-4 q-10,-8 -18,-10 q-4,-14 -6,-26 q0,-16 4,-30Z" fill="var(--soot)"/>
+    <circle cx="80" cy="186" r="5" fill="var(--soot)"/><circle cx="124" cy="190" r="4" fill="var(--soot)"/></svg>`,
+  verbrannt:`<svg viewBox="0 0 200 240" role="img" aria-label="Ventilteller von unten mit herausgebranntem Stück am Rand">
+    <defs><radialGradient id="ht" cx="74%" cy="22%" r="62%"><stop offset="0" stop-color="var(--heat)"/><stop offset=".55" stop-color="var(--heat2)"/><stop offset="1" stop-color="var(--steel2)"/></radialGradient>
+    <clipPath id="disc"><circle cx="100" cy="125" r="88"/></clipPath></defs>
+    <circle cx="100" cy="125" r="88" fill="url(#ht)" stroke="var(--muted)" stroke-width="1.5"/>
+    <path d="M128,32 L120,70 L150,92 L182,82 L196,40 Z" fill="var(--panel)" stroke="var(--soot)" stroke-width="2.5" stroke-linejoin="round" clip-path="url(#disc)"/>
+    <circle cx="100" cy="125" r="18" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/></svg>`,
+  tulpe:`<svg viewBox="0 0 200 240" role="img" aria-label="Ventil mit tulpenförmig hochgebogenem Teller">${S.stem}
+    <path d="M92,150 Q92,182 52,190 Q34,176 22,168 L18,180 Q36,204 60,216 L140,216 Q164,204 182,180 L178,168 Q166,176 148,190 Q108,182 108,150 Z" fill="var(--steel2)" stroke="var(--muted)" stroke-width="1.5"/>
+    <path d="M22,168 Q30,200 60,216" fill="none" stroke="var(--heat)" stroke-width="4"/><path d="M178,168 Q170,200 140,216" fill="none" stroke="var(--heat)" stroke-width="4"/></svg>`,
+  abgerissen:`<svg viewBox="0 0 200 240" role="img" aria-label="Ventilschaft mit abgerissenem Teller">
+    <rect x="92" y="8" width="16" height="104" fill="var(--steel2)" stroke="var(--muted)" stroke-width="1.5"/>
+    <rect x="92" y="8" width="16" height="14" fill="var(--steel)" stroke="var(--muted)" stroke-width="1.5"/>
+    <path d="M92,112 L96,118 L100,110 L104,120 L108,112" fill="none" stroke="var(--soot)" stroke-width="2"/>
+    <g transform="rotate(14 100 200)"><path d="M90,166 L95,160 L100,168 L105,158 L110,166 Q112,188 160,200 L168,208 L168,220 L32,220 L32,208 L40,200 Q88,188 90,166 Z" fill="var(--steel2)" stroke="var(--muted)" stroke-width="1.5"/></g></svg>`
+};
+const CASES = [
+ {key:"verkokt", view:"Seitenansicht", qs:[
+  {t:"Wie heißt dieses Schadensbild?", o:["Verkoktes Ventil","Tulpenbildung","Verbranntes Ventil","Abgerissener Ventilteller"], a:0,
+   e:"Schwarze, harte Ablagerungen (Ölkohle) am Ventilhals und am Teller."},
+  {t:"Was ist eine typische Ursache?", o:["Öl gelangt über verschlissene Ventilschaftdichtung oder Ventilführung ans Ventil und verbrennt","Das Ventil hat zu viel Spiel","Der Zahnriemen ist übergesprungen"], a:0,
+   e:"Das Öl verkokt an der heißen Oberfläche. Häufiger Kurzstreckenbetrieb verstärkt das. Bei Direkteinspritzern verkoken oft die Einlassventile, weil kein Kraftstoff sie freispült."},
+  {t:"Welche Folge hat das?", o:["Der Ansaugquerschnitt wird kleiner, das Ventil kann schlechter schließen: Leistung sinkt, Leerlauf wird unrund","Der Motor überhitzt sofort","Das Ventilspiel wird größer"], a:0,
+   e:"Weniger Füllung, und Ablagerungen auf dem Sitz verhindern dichtes Schließen."}]},
+ {key:"verbrannt", view:"Ansicht von unten (Brennraumseite)", qs:[
+  {t:"Wie heißt dieses Schadensbild?", o:["Tulpenbildung","Verbranntes (durchgebranntes) Ventil","Verkoktes Ventil","Abgerissener Ventilteller"], a:1,
+   e:"Am Tellerrand fehlt ein Stück, rundherum Anlauffarben von der Hitze."},
+  {t:"Was ist eine typische Ursache?", o:["Zu großes Ventilspiel","Das Ventil schließt nicht vollständig, z. B. zu kleines Ventilspiel, klemmendes Ausgleichselement oder Ablagerungen auf dem Sitz","Zu viel Öl im Motor"], a:1,
+   e:"Liegt der Teller nicht auf dem Sitz, kann er seine Wärme nicht an den Zylinderkopf abgeben. Gleichzeitig strömt heißes Abgas durch den Spalt und brennt den Rand weg."},
+  {t:"Welche Folge hat das?", o:["Lautes Klappern im Leerlauf","Kühlmittel im Öl","Kompressionsverlust am Zylinder, Verbrennungsaussetzer, Luft beim Druckverlusttest am Auspuff"], a:2,
+   e:"Der Zylinder ist nicht mehr dicht. Genau das zeigt unser WIS-Protokoll."}]},
+ {key:"tulpe", view:"Seitenansicht", qs:[
+  {t:"Wie heißt dieses Schadensbild?", o:["Abgerissener Ventilteller","Verkoktes Ventil","Tulpenbildung","Verbranntes Ventil"], a:2,
+   e:"Der Teller hat sich wie eine Tulpenblüte verformt."},
+  {t:"Was ist eine typische Ursache?", o:["Überhitzung des Ventils, z. B. durch zu mageres Gemisch oder klopfende Verbrennung, zusammen mit der Kraft der Ventilfeder","Verschlissene Ventilschaftdichtung","Zu großes Ventilspiel"], a:0,
+   e:"Ist der Werkstoff zu heiß, verliert er Festigkeit. Die Federkraft zieht den Teller dann in den Sitz und verformt ihn."},
+  {t:"Welche Folge hat das?", o:["Das Ventil wird leichter","Das Ventil dichtet nicht mehr, der Teller kann im Extremfall abreißen","Der Ölverbrauch sinkt"], a:1,
+   e:"Ein verformter Teller liegt nicht mehr ringsum auf dem Sitz auf."}]},
+ {key:"abgerissen", view:"Seitenansicht", qs:[
+  {t:"Wie heißt dieses Schadensbild?", o:["Abgerissener Ventilteller","Tulpenbildung","Verbranntes Ventil","Verkoktes Ventil"], a:0,
+   e:"Schaft und Teller sind am Übergang getrennt."},
+  {t:"Was ist eine typische Ursache?", o:["Zu kleines Ventilspiel","Kurzstreckenbetrieb","Ermüdungsbruch nach Überhitzung oder Überdrehzahl, oder das Ventil schlägt auf den Kolben, z. B. weil der Zahnriemen übergesprungen ist"], a:2,
+   e:"Der Übergang vom Schaft zum Teller ist die am höchsten belastete Stelle."},
+  {t:"Welche Folge hat das?", o:["Leicht unrunder Leerlauf","Der Teller fällt in den Brennraum: schwerer Motorschaden an Kolben und Zylinderkopf","Erhöhter Kraftstoffverbrauch"], a:1,
+   e:"Meist ist danach eine Motorinstandsetzung fällig."}]}
+];
+const FINAL = {t:"Und unser Golf?", lead:"WIS-Protokoll: Zylinder 2 hat nur 5,5 bar Kompression. Bei der Druckverlustprüfung zischt die Luft am Auspuff.",
+  q:"Welches Schadensbild erwartest du am Auslassventil von Zylinder 2?", o:["Verkoktes Ventil","Verbranntes Ventil","Tulpenbildung","Abgerissener Ventilteller"], a:1,
+  e:"Ein abgerissener Teller hätte einen lauten Motorschaden gemacht. Ein verkoktes Auslassventil ist eher selten. Verbrannt passt: Das Ventil schließt nicht mehr dicht, die Luft entweicht in den Auspuff. Die offene Frage für die 3. Stunde: Warum schließt es nicht mehr?"};
+
+let ci=0, qi=0, pts=0, firstTry=true;
+const stage=document.getElementById('stage'), prog=document.getElementById('prog'), sc=document.getElementById('score');
+function bar(){prog.innerHTML=CASES.concat([0]).map((_,i)=>`<span class="${i<ci?'done':i===ci?'now':''}"></span>`).join('')}
+function setScore(){sc.textContent=pts+(pts===1?' Punkt':' Punkte')+' von 13'}
+function intro(){
+  stage.innerHTML=`<div class="intro"><span class="tag">Station 2 · Ventilschäden</span>
+  <p>In der Werkstatt liegen vier ausgebaute Ventile. Finde für jedes heraus: Wie heißt der Schaden, woher kommt er, was bewirkt er?</p>
+  <p>Für jede Frage, die du beim ersten Versuch richtig hast, gibt es einen Punkt. Danach wendest du dein Wissen auf unseren Golf an.</p>
+  <button class="main" id="go">Los geht's</button></div>`;
+  document.getElementById('go').onclick=()=>{ci=0;qi=0;pts=0;setScore();show()};
+  bar();setScore();
+}
+function show(){
+  bar();
+  if(ci>=CASES.length) return final();
+  const c=CASES[ci], q=c.qs[qi]; firstTry=true;
+  stage.innerHTML=`<div class="card"><div class="fig">${draw[c.key]}<small>Ventil ${ci+1} von 4 · ${c.view}</small></div>
+   <div class="q"><span class="tag">Frage ${qi+1} von 3</span><h2>${q.t}</h2>
+   <div class="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}</div>
+   <div id="fb"></div></div></div>`;
+  stage.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(b,q,()=>{qi++; if(qi>=3){qi=0;ci++;} show();}));
+}
+function answer(b,q,next){
+  const i=+b.dataset.i, fb=document.getElementById('fb');
+  if(i===q.a){
+    b.classList.add('right'); if(firstTry){pts++;setScore();}
+    stage.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+    fb.innerHTML=`<div class="fb ok"><b>Richtig.</b> ${q.e}</div>`;
+    const n=document.createElement('button'); n.className='main'; n.textContent='Weiter'; n.onclick=next; fb.appendChild(n); n.style.marginTop='12px'; n.focus();
+  } else {
+    firstTry=false; b.classList.add('wrong'); b.disabled=true;
+    fb.innerHTML=`<div class="fb no">Das passt nicht. Schau dir das Bild noch einmal genau an und versuch es erneut.</div>`;
+  }
+}
+function final(){
+  firstTry=true;
+  stage.innerHTML=`<div class="intro"><span class="tag">Fall · Golf 2.0 TFSI</span><h2 style="font-family:var(--f-display);font-size:1.7rem;margin:0">${FINAL.t}</h2>
+   <p>${FINAL.lead}</p><p><b>${FINAL.q}</b></p>
+   <div class="opts">${FINAL.o.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}</div><div id="fb"></div></div>`;
+  stage.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(b,FINAL,done));
+}
+function done(){
+  ci=CASES.length+1; bar();
+  stage.innerHTML=`<div class="intro"><span class="tag">Fertig · ${pts} von 13 Punkten</span>
+   <p><b>Jetzt ins Heft:</b> Trag die vier Schadensbilder mit Ursache und Folge in dein AH ein (S. 37, Aufg. 3).</p>
+   <p><b>Fehlerbaum, Kasten Station 2:</b> Welches Schadensbild passt zu Zylinder 2, und warum?</p>
+   <button class="main" id="again">Für die nächste Gruppe neu starten</button></div>`;
+  document.getElementById('again').onclick=intro;
+}
+intro();
+</script>
