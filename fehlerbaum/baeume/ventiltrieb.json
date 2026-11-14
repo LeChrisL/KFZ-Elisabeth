@@ -1,0 +1,64 @@
+{
+  "id": "ventiltrieb",
+  "titel": "BW3 Ventiltrieb – Fall Bauer (Golf 2.0 TFSI)",
+  "farben": {
+    "symptom": "#26323A",
+    "ursache": "#F6D04D",
+    "station": "#2A9D8F",
+    "lehrkraft": "#E8533A"
+  },
+  "bloecke": [
+    { "typ": "symptom", "spalte": 1, "text": "Aussetzer Zylinder 2", "detail": "Kompression 5,5 bar" },
+    { "typ": "check", "spalte": 1, "id": "c1", "text": "1 Wo?" },
+    {
+      "typ": "ursachen", "spalte": 1, "spalten": 2,
+      "hinweis": "Druckverlust: Luft am Auspuff",
+      "karten": [
+        { "id": "u1", "text": "Kolbenringe verschlissen" },
+        { "id": "u2", "text": "ZKD-Schaden" },
+        { "id": "u3", "text": "Einlassventil undicht" },
+        { "id": "u4", "text": "Auslassventil undicht" },
+        { "id": "u5", "text": "Riefen in der Zylinderwand" }
+      ]
+    },
+    { "typ": "check", "spalte": 2, "id": "c2", "text": "2 Was?" },
+    {
+      "typ": "stationen", "spalte": 2, "spalten": 2, "tische": ["A", "B"],
+      "karten": [
+        {
+          "nr": 1, "titel": "Die Altteilekiste",
+          "leitfrage": "Kann ein Ventil, das nicht ganz schließt, Kompression verlieren?",
+          "satz": [ { "wahl": "w1", "optionen": ["Ja", "Nein"] }, ", weil ", { "feld": "f1", "max": 30 } ],
+          "beispiel": { "w1": "Ja", "f1": "es nicht mehr abdichtet" }
+        },
+        {
+          "nr": 2, "titel": "Schadensbilder",
+          "leitfrage": "Welches Schadensbild passt zu Zylinder 2?",
+          "satz": [ "Ventil ist ", { "feld": "f1", "max": 20 } ],
+          "beispiel": { "f1": "verbrannt" }
+        },
+        {
+          "nr": 3, "titel": "Ventilarten und Werkstoffe",
+          "leitfrage": "Wie heiß darf ein Auslassventil werden?",
+          "satz": [ "bis ", { "feld": "f1", "max": 5, "breite": 4, "modus": "numeric" }, " °C, aber nur wenn ", { "feld": "f2", "max": 30 } ],
+          "beispiel": { "f1": "800", "f2": "es die Wärme abgeben kann" }
+        },
+        {
+          "nr": 4, "titel": "Ventilsitz",
+          "leitfrage": "Wie gibt das Ventil seine Wärme ab?",
+          "satz": [ "über den ", { "feld": "f1", "max": 20 } ],
+          "beispiel": { "f1": "Ventilsitz" }
+        }
+      ]
+    },
+    { "typ": "check", "spalte": 2, "id": "c3", "text": "3 Warum?" },
+    {
+      "typ": "lehrkraft", "spalte": 2, "pfeil": "→",
+      "karten": [
+        { "id": "l1", "text": "Hydroelement klemmt" },
+        { "id": "l2", "text": "Ölschlamm" }
+      ]
+    },
+    { "typ": "check", "spalte": 2, "id": "c4", "text": "4 Herr Bauer → Mittwoch" }
+  ]
+}

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fehlerbaum – Gruppenkarte</title>
+<style>
+  :root { --station: #2A9D8F; --lehrkraft: #E8533A; --symptom: #26323A; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; background: #F7F5F0; color: #1d2327; font-size: 19px; }
+  .kopf { background: var(--station); color: #fff; padding: 18px 20px 16px; }
+  .kopf .klein { font-size: 15px; opacity: .9; display: flex; justify-content: space-between; }
+  .kopf h1 { margin: 6px 0 0; font-size: 26px; }
+  main { padding: 18px 20px 40px; max-width: 720px; margin: 0 auto; }
+  .leitfrage { font-size: 21px; font-weight: 600; margin: 0 0 18px; }
+  .satz { background: #fff; border: 3px solid var(--station); border-radius: 14px; padding: 18px; font-size: 24px; line-height: 2.1; }
+  .satz input { font: inherit; font-weight: 700; color: var(--station); border: none; border-bottom: 3px solid var(--station); background: #eef7f6; border-radius: 6px 6px 0 0; padding: 2px 8px; width: 100%; max-width: 100%; }
+  .satz input.kurz { width: 4.2em; }
+  .satz input:disabled { background: #f1f1f1; color: #555; }
+  .feld { display: inline-block; position: relative; vertical-align: baseline; }
+  .feld.lang { display: block; margin: 2px 0 6px; }
+  .zaehler { position: absolute; right: 4px; bottom: -20px; font-size: 12px; color: #888; line-height: 1; }
+  .wahl button { font: inherit; font-size: 21px; padding: 4px 14px; margin-right: 6px; border: 2px solid var(--station); border-radius: 10px; background: #fff; color: var(--station); cursor: pointer; }
+  .wahl button.an { background: var(--station); color: #fff; }
+  .wahl button:disabled { opacity: .6; }
+  .hinweis { font-size: 15px; color: #666; margin: 12px 2px 0; }
+  #senden { display: block; width: 100%; margin-top: 22px; font: inherit; font-size: 22px; font-weight: 700; padding: 16px; border: none; border-radius: 14px; background: var(--lehrkraft); color: #fff; cursor: pointer; }
+  #senden:disabled { background: #bbb; }
+  .info { margin-top: 16px; padding: 12px 14px; border-radius: 10px; font-size: 17px; display: none; }
+  .info.an { display: block; }
+  .info.ok { background: #e3f4ea; color: #1d5e35; }
+  .info.gesperrt { background: #fff2cc; color: #6a5200; }
+  .info.fehler { background: #fde3e0; color: #8a1d12; }
+  .verbindung { font-size: 13px; color: #888; margin-top: 26px; text-align: center; }
+  .wahlliste { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .wahlliste a, .wahlliste button { display: block; text-align: center; padding: 14px; background: #fff; border: 2px solid var(--station); border-radius: 12px; color: var(--station); font-weight: 600; text-decoration: none; font: inherit; }
+  .codefeld { font: inherit; font-size: 30px; letter-spacing: 4px; width: 100%; text-align: center; padding: 10px; border: 3px solid var(--station); border-radius: 12px; text-transform: lowercase; font-family: ui-monospace, Consolas, monospace; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="js/einstellungen.js"></script>
+<script src="js/gemeinsam.js"></script>
+<script src="js/verbindung.js"></script>
+<script>
+(async function () {
+  "use strict";
+  const app = document.getElementById("app");
+  const e = fb.esc;
+  const baumId = fb.param("baum", "ventiltrieb");
+  const code = (fb.param("s", "") || "").toLowerCase();
+  const nr = parseInt(fb.param("station", ""), 10);
+  const tisch = fb.param("tisch", "");
+
+  let baum;
+  try { baum = await fb.ladeBaum(baumId); }
+  catch (err) { app.innerHTML = "<main><p class='info fehler an'>" + e(err.message) + "</p></main>"; return; }
+  fb.farbenSetzen(baum);
+  const stBlock = fb.stationen(baum);
+
+  function weiter(params) {
+    const u = new URL(location.href);
+    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+    location.href = u.href;
+  }
+
+  // Ohne Code: Code eingeben (Ausweichweg, falls kein QR-Code gescannt wurde)
+  if (!code) {
+    app.innerHTML = "<div class='kopf'><h1>Fehlerbaum</h1></div><main><p class='leitfrage'>Code vom Beamer eingeben:</p>" +
+      "<input class='codefeld' id='c' maxlength='8' autocomplete='off' autocapitalize='none' spellcheck='false'>" +
+      "<button id='senden'>Weiter</button></main>";
+    document.getElementById("senden").onclick = () => {
+      const c = document.getElementById("c").value.trim().toLowerCase();
+      if (c.length >= 4) weiter({ s: c });
+    };
+    return;
+  }
+
+  // Ohne Station/Tisch: auswählen
+  const st = stBlock.karten.find(k => k.nr === nr);
+  if (!st || !(stBlock.tische || ["A"]).includes(tisch)) {
+    let h = "<div class='kopf'><h1>Welche Station, welcher Tisch?</h1></div><main><div class='wahlliste'>";
+    stBlock.karten.forEach(k => (stBlock.tische || ["A"]).forEach(t => {
+      h += "<button data-st='" + k.nr + "' data-t='" + e(t) + "'>St. " + k.nr + " · Tisch " + e(t) + "<br><small>" + e(k.titel) + "</small></button>";
+    }));
+    app.innerHTML = h + "</div></main>";
+    app.addEventListener("click", ev => { const b = ev.target.closest("[data-st]"); if (b) weiter({ station: b.dataset.st, tisch: b.dataset.t }); });
+    return;
+  }
+
+  // ---------- Karte ----------
+  const schl = fb.schluessel(st.nr, tisch);
+  const entwurfSchl = "fb-entwurf-" + code + "-" + schl;
+  let werte = {};
+  try { werte = JSON.parse(localStorage.getItem(entwurfSchl) || "{}"); } catch (err) {}
+  let gesendet = false, freigegeben = false;
+
+  let satz = "";
+  st.satz.forEach(teil => {
+    if (typeof teil === "string") { satz += "<span>" + e(teil) + "</span>"; return; }
+    if (teil.wahl) {
+      satz += "<span class='wahl' data-wahl='" + e(teil.wahl) + "'>" + teil.optionen.map(o =>
+        "<button type='button' data-opt='" + e(o) + "'>☐ " + e(o) + "</button>").join("") + "</span>";
+      return;
+    }
+    const kurz = teil.breite && teil.breite <= 6;
+    satz += "<span class='feld" + (kurz ? "" : " lang") + "'><input data-feld='" + e(teil.feld) + "' maxlength='" + (teil.max || 30) + "'" +
+      (kurz ? " class='kurz'" : "") + (teil.modus ? " inputmode='" + e(teil.modus) + "'" : "") +
+      " autocomplete='off' spellcheck='true'><span class='zaehler'></span></span>";
+  });
+
+  app.innerHTML =
+    "<div class='kopf'><div class='klein'><span>Station " + st.nr + "</span><span>Tisch " + e(tisch) + "</span></div><h1>" + e(st.titel) + "</h1></div>" +
+    "<main><p class='leitfrage'>" + e(st.leitfrage || "") + "</p>" +
+    "<div class='satz' id='satz'>" + satz + "</div>" +
+    "<p class='hinweis'>Nur Stichworte, 1–2 Wörter pro Lücke. Keine Namen.</p>" +
+    "<button id='senden'>Absenden</button>" +
+    "<div class='info' id='info'></div>" +
+    "<div class='verbindung' id='verb'>verbinde …</div></main>";
+
+  const satzEl = document.getElementById("satz");
+  const knopf = document.getElementById("senden");
+  const info = document.getElementById("info");
+
+  function werteInsFormular() {
+    satzEl.querySelectorAll("input[data-feld]").forEach(i => { i.value = werte[i.dataset.feld] || ""; zaehle(i); });
+    satzEl.querySelectorAll("[data-wahl]").forEach(w => w.querySelectorAll("button").forEach(b => {
+      const an = werte[w.dataset.wahl] === b.dataset.opt;
+      b.classList.toggle("an", an);
+      b.textContent = (an ? "☒ " : "☐ ") + b.dataset.opt;
+    }));
+  }
+  function zaehle(i) {
+    const z = i.parentElement.querySelector(".zaehler");
+    const rest = i.maxLength - i.value.length;
+    z.textContent = rest <= 10 ? rest + " Zeichen frei" : "";
+  }
+  function speichereEntwurf() { localStorage.setItem(entwurfSchl, JSON.stringify(werte)); }
+
+  satzEl.addEventListener("input", ev => {
+    const i = ev.target.closest("input[data-feld]"); if (!i) return;
+    werte[i.dataset.feld] = i.value; zaehle(i); speichereEntwurf(); zeigeStatus();
+  });
+  satzEl.addEventListener("click", ev => {
+    const b = ev.target.closest("[data-opt]"); if (!b || freigegeben) return;
+    werte[b.closest("[data-wahl]").dataset.wahl] = b.dataset.opt;
+    speichereEntwurf(); werteInsFormular(); zeigeStatus();
+  });
+
+  function vollstaendig() {
+    return st.satz.every(teil => typeof teil === "string" || (werte[teil.wahl || teil.feld] || "").trim() !== "");
+  }
+
+  function zeigeStatus(text, art) {
+    satzEl.querySelectorAll("input, button").forEach(x => x.disabled = freigegeben);
+    knopf.disabled = freigegeben || !vollstaendig();
+    knopf.textContent = gesendet ? "Änderung senden" : "Absenden";
+    if (text) { info.className = "info an " + art; info.textContent = text; return; }
+    if (freigegeben) { info.className = "info an gesperrt"; info.textContent = "Eure Karte ist jetzt am Beamer zu sehen. Ändern geht nicht mehr."; }
+    else if (gesendet) { info.className = "info an ok"; info.textContent = "Gesendet ✓ Bis die Lehrkraft eure Karte zeigt, könnt ihr noch ändern."; }
+    else info.className = "info";
+  }
+
+  knopf.onclick = async () => {
+    if (!vollstaendig() || freigegeben) return;
+    const sauber = {};
+    Object.entries(werte).forEach(([k, v]) => sauber[k] = String(v).trim().slice(0, 40));
+    knopf.disabled = true;
+    try {
+      await verb.senden({ t: "karte", st: st.nr, tisch, werte: sauber, zeit: Date.now() });
+      gesendet = true; zeigeStatus();
+    } catch (err) {
+      zeigeStatus("Senden hat nicht geklappt. Bitte nochmal tippen – oder die Papier-Lückenkarte nehmen.", "fehler");
+    }
+  };
+
+  // ---------- Verbindung ----------
+  const verb = fbVerbindung(code);
+  const verbEl = document.getElementById("verb");
+  verb.status((s, t) => { verbEl.textContent = s === "verbunden" ? "Code " + code + " · verbunden" : (t || s); });
+  verb.abonnieren(n => {
+    if (!n) return;
+    if (n.t === "karte" && n.st === st.nr && n.tisch === tisch) {
+      // Karte dieses Tisches (auch von einem zweiten Gerät der Gruppe)
+      gesendet = true;
+      werte = Object.assign({}, n.werte); speichereEntwurf(); werteInsFormular(); zeigeStatus();
+    } else if (n.t === "zustand" && n.z) {
+      freigegeben = !!(n.z.freigabe || {})[schl];
+      zeigeStatus();
+    }
+  });
+
+  werteInsFormular();
+  zeigeStatus();
+})();
+</script>
+</body>
+</html>

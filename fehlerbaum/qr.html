@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fehlerbaum – QR-Codes</title>
+<style>
+  :root { --station: #2A9D8F; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; color: #1d2327; background: #fff; }
+  .leiste { padding: 10px 16px; border-bottom: 1px solid #ddd; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .leiste button { font: inherit; padding: 6px 12px; border-radius: 6px; border: 1px solid #bbb; background: #fff; cursor: pointer; }
+  .code { font-family: ui-monospace, Consolas, monospace; font-size: 20px; letter-spacing: 2px; background: #eef6f5; padding: 2px 8px; border-radius: 6px; }
+  .raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; padding: 16px; }
+  .qr { border: 3px solid var(--station); border-radius: 12px; padding: 12px; text-align: center; break-inside: avoid; }
+  .qr .st { font-size: 22px; font-weight: 700; color: var(--station); }
+  .qr .ti { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .qr svg { width: 100%; max-width: 200px; height: auto; display: block; margin: 0 auto; }
+  .qr .klein { font-size: 11px; color: #777; margin-top: 4px; word-break: break-all; }
+  .qr a { color: inherit; }
+  @media print {
+    @page { size: A4 portrait; margin: 10mm; }
+    .leiste { display: none; }
+    .raster { grid-template-columns: repeat(2, 1fr); gap: 8mm; padding: 0; }
+    .qr { padding: 5mm; }
+    .qr svg { max-width: 55mm; }
+  }
+</style>
+</head>
+<body>
+<div class="leiste">
+  <strong id="titel">QR-Codes</strong>
+  <span>Code <span class="code" id="code"></span></span>
+  <button onclick="window.print()">Drucken</button>
+  <span style="font-size:13px;color:#666">Ohne QR: Seite <b id="ohne"></b> öffnen und den Code eingeben.</span>
+</div>
+<div class="raster" id="raster"></div>
+
+<script src="js/einstellungen.js"></script>
+<script src="js/gemeinsam.js"></script>
+<script src="lib/qrcode.js"></script>
+<script>
+(async function () {
+  const baumId = fb.param("baum", "ventiltrieb");
+  const code = fb.param("s", "");
+  const baum = await fb.ladeBaum(baumId);
+  const st = fb.stationen(baum);
+  document.getElementById("titel").textContent = baum.titel;
+  document.getElementById("code").textContent = code;
+  const basis = new URL("karte.html", location.href);
+  document.getElementById("ohne").textContent = basis.href.replace(/^https?:\/\//, "");
+  const verbindung = fb.param("verbindung", "");
+  let h = "";
+  st.karten.forEach(k => (st.tische || ["A"]).forEach(t => {
+    const u = new URL(basis.href);
+    u.searchParams.set("baum", baumId); u.searchParams.set("s", code);
+    u.searchParams.set("station", k.nr); u.searchParams.set("tisch", t);
+    if (verbindung) u.searchParams.set("verbindung", verbindung);
+    const q = qrcode(0, "M"); q.addData(u.href); q.make();
+    h += "<div class='qr'><div class='st'>Station " + k.nr + "</div><div class='ti'>" + fb.esc(k.titel) + " · Tisch " + fb.esc(t) + "</div>" +
+      "<a href='" + fb.esc(u.href) + "' target='_blank'>" + q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }) + "</a>" +
+      "<div class='klein'>" + fb.esc(u.href) + "</div></div>";
+  }));
+  document.getElementById("raster").innerHTML = h;
+})();
+</script>
+</body>
+</html>

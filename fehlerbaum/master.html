@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fehlerbaum – Masteransicht</title>
+<style>
+  :root {
+    --symptom: #26323A; --ursache: #F6D04D; --station: #2A9D8F; --lehrkraft: #E8533A;
+    --u: min(1vw, 1.75vh);
+    --papier: #F7F5F0; --tinte: #1d2327;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--papier); color: var(--tinte);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; }
+  body { display: flex; flex-direction: column; }
+
+  /* Werkzeugleiste */
+  #leiste { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 10px;
+    background: #fff; border-bottom: 1px solid #ddd; font-size: 14px; }
+  #leiste .titel { font-weight: 600; margin-right: 8px; }
+  @media (max-width: 1500px) { #leiste .titel { display: none; } #leiste { font-size: 13px; } #leiste button { padding: 4px 8px; } }
+  #leiste button, #leiste select { font: inherit; padding: 5px 10px; border: 1px solid #c9c9c9; border-radius: 6px; background: #fff; cursor: pointer; }
+  #leiste button:hover { background: #f0f0f0; }
+  #leiste button.aktiv { background: var(--station); color: #fff; border-color: var(--station); }
+  #leiste .gruppe { display: inline-flex; gap: 0; }
+  #leiste .gruppe button { border-radius: 0; margin-left: -1px; }
+  #leiste .gruppe button:first-child { border-radius: 6px 0 0 6px; }
+  #leiste .gruppe button:last-child { border-radius: 0 6px 6px 0; }
+  #leiste .rechts { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  #code { font-family: ui-monospace, Consolas, monospace; font-size: 18px; letter-spacing: 2px; background: #eef6f5; padding: 2px 8px; border-radius: 6px; }
+  #status { font-size: 13px; }
+  #status::before { content: "●"; margin-right: 4px; }
+  #status.verbunden::before { color: #2a9d48; }
+  #status.getrennt::before, #status.fehler::before { color: #d33; }
+  #zaehler { font-size: 13px; color: #555; }
+  #zeigeLeiste { position: fixed; top: 6px; right: 6px; z-index: 5; display: none; opacity: .35; border: 1px solid #aaa; background: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+  #zeigeLeiste:hover { opacity: 1; }
+  body.ohneLeiste #leiste { display: none; }
+  body.ohneLeiste #zeigeLeiste { display: block; }
+
+  /* Baum */
+  #baum { flex: 1; display: grid; grid-template-columns: 40fr 4fr 56fr; gap: calc(var(--u) * 1); padding: calc(var(--u) * 1.6) calc(var(--u) * 2); background: var(--papier); min-height: 0; }
+  .spalte { display: flex; flex-direction: column; gap: calc(var(--u) * 1.1); min-height: 0; }
+  .mittelpfeil { display: flex; align-items: center; justify-content: center; font-size: calc(var(--u) * 5); color: #c6c6c6; transition: color .3s; }
+  .mittelpfeil.an { color: var(--tinte); }
+
+  .karte { border-radius: calc(var(--u) * .8); box-shadow: 0 2px 6px rgba(0,0,0,.12); padding: calc(var(--u) * 1.1) calc(var(--u) * 1.4); line-height: 1.2; }
+
+  .symptom { background: var(--symptom); color: #fff; text-align: center; }
+  .symptom .haupt { font-size: calc(var(--u) * 3.2); font-weight: 700; }
+  .symptom .detail { font-size: calc(var(--u) * 1.9); opacity: .85; margin-top: calc(var(--u) * .3); }
+
+  .check { font-size: calc(var(--u) * 2.2); font-weight: 600; cursor: pointer; user-select: none; color: #3a3a3a; font-family: "Segoe Print", "Chalkboard SE", "Comic Sans MS", sans-serif; }
+  .check .kasten { display: inline-block; width: 1.2em; }
+  .check.an { color: #2a7d48; }
+
+  .raster { display: grid; gap: calc(var(--u) * 1); }
+  .ursache { background: var(--ursache); font-size: calc(var(--u) * 2.15); font-weight: 600; text-align: center; cursor: pointer; user-select: none; position: relative; display: flex; align-items: center; justify-content: center; min-height: calc(var(--u) * 6.5); }
+  .ursache.weg { opacity: .55; }
+  .ursache.weg::after { content: ""; position: absolute; inset: 8% 4%;
+    background: linear-gradient(to top right, transparent calc(50% - 3px), #222 calc(50% - 3px), #222 calc(50% + 3px), transparent calc(50% + 3px)),
+                linear-gradient(to top left,  transparent calc(50% - 3px), #222 calc(50% - 3px), #222 calc(50% + 3px), transparent calc(50% + 3px)); }
+  .ursache.kreis { outline: calc(var(--u) * .45) solid #c62828; outline-offset: calc(var(--u) * .35); border-radius: 50% / 40%; }
+  .hinweis { font-size: calc(var(--u) * 2); font-family: "Segoe Print", "Chalkboard SE", "Comic Sans MS", sans-serif; color: #333; text-align: center; visibility: hidden; }
+  .hinweis.an { visibility: visible; }
+
+  .station { background: var(--station); color: #fff; cursor: pointer; user-select: none; display: flex; flex-direction: column; gap: calc(var(--u) * .5); min-height: calc(var(--u) * 9); }
+  .station .kopf { font-size: calc(var(--u) * 1.45); opacity: .9; display: flex; justify-content: space-between; gap: 8px; }
+  .station .zeile { font-size: calc(var(--u) * 2.3); font-weight: 600; line-height: 1.25; }
+  .station.zwei { gap: calc(var(--u) * .3); padding-top: calc(var(--u) * .8); padding-bottom: calc(var(--u) * .8); }
+  .station.zwei .zeile { font-size: calc(var(--u) * 1.5); line-height: 1.2; }
+  .station.zwei .luecke.voll { border-bottom-width: 2px; }
+  .station .zeile .tisch { display: inline-block; font-size: .6em; font-weight: 700; background: rgba(255,255,255,.25); border-radius: 4px; padding: 0 .35em; margin-right: .4em; vertical-align: middle; }
+  .station .luecke.voll { border-bottom: 3px solid rgba(255,255,255,.85); padding: 0 .15em; }
+  .station .luecke.leer { opacity: .5; }
+  .station .wahl { opacity: .55; font-weight: 500; }
+  .station .wahl.an { opacity: 1; font-weight: 700; }
+  .station .wartet { font-size: calc(var(--u) * 1.6); opacity: .65; font-style: italic; }
+  .station .verdeckt { font-size: calc(var(--u) * 1.7); background: rgba(255,255,255,.18); border: 2px dashed rgba(255,255,255,.7); border-radius: 8px; padding: .25em .5em; animation: pulsieren 1.6s ease-in-out infinite; }
+  @keyframes pulsieren { 50% { background: rgba(255,255,255,.32); } }
+  .station .zeile + .zeile, .station .zeile + .wartet, .station .wartet + .zeile, .station .verdeckt + .zeile, .station .zeile + .verdeckt { margin-top: calc(var(--u) * .3); }
+
+  .kette { display: flex; align-items: center; gap: calc(var(--u) * 1.2); }
+  .kette .pf { font-size: calc(var(--u) * 3); color: #444; }
+  .lehrkraft { background: var(--lehrkraft); color: #fff; font-size: calc(var(--u) * 2.4); font-weight: 700; flex: 1; text-align: center; cursor: pointer; user-select: none; min-height: calc(var(--u) * 6.5); display: flex; align-items: center; justify-content: center; }
+  .lehrkraft.zu { background: transparent; color: #b9b9b9; border: 2px dashed #cfcfcf; box-shadow: none; font-weight: 500; font-size: calc(var(--u) * 1.6); }
+  .kette .pf.zu { color: #ddd; }
+
+  .stationen-raster { flex: 1; min-height: 0; }
+
+  /* Beim Bildexport keine Bedienhinweise */
+  body.export .lehrkraft.zu, body.export .station .verdeckt { visibility: hidden; }
+
+  #meldung { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: #222; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  #meldung.an { opacity: .92; }
+  #fehler { padding: 40px; font-size: 20px; color: #a00; }
+
+  @media print {
+    @page { size: A4 landscape; margin: 8mm; }
+    #leiste, #zeigeLeiste, #meldung { display: none !important; }
+    html, body { height: auto; background: #fff; }
+    #baum { --u: 3.5mm; height: 190mm; background: #fff; }
+    .karte { box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .lehrkraft.zu, .station .verdeckt { visibility: hidden; }
+  }
+</style>
+</head>
+<body>
+<div id="leiste">
+  <span class="titel" id="titel">Fehlerbaum</span>
+  <span>Tische:</span>
+  <span class="gruppe" id="tischWahl"></span>
+  <button id="btnQR" title="QR-Codes für die Gruppenkarten">QR-Codes</button>
+  <button id="btnTest" title="Beispielkarten aller Stationen senden">Testdaten</button>
+  <button id="btnBild" title="Fehlerbaum als PNG-Bild speichern">Bild speichern</button>
+  <button id="btnDruck" title="Drucken oder als PDF speichern">PDF/Drucken</button>
+  <button id="btnVoll">Vollbild</button>
+  <button id="btnAus" title="Leiste ausblenden (Taste L)">Leiste aus</button>
+  <span class="rechts">
+    <span id="zaehler"></span>
+    <span>Code <span id="code">…</span></span>
+    <span id="status">verbinde …</span>
+    <button id="btnNeu" title="Neue Sitzung für die nächste Klasse">Neue Sitzung</button>
+  </span>
+</div>
+<button id="zeigeLeiste" title="Leiste einblenden (Taste L)">☰</button>
+<div id="baum"></div>
+<div id="meldung"></div>
+
+<script src="js/einstellungen.js"></script>
+<script src="js/gemeinsam.js"></script>
+<script src="js/verbindung.js"></script>
+<script src="lib/html-to-image.js"></script>
+<script>
+(async function () {
+  "use strict";
+  const baumId = fb.param("baum", "ventiltrieb");
+  const ich = fb.instanzId();
+  let baum;
+  try { baum = await fb.ladeBaum(baumId); }
+  catch (e) { document.getElementById("baum").outerHTML = "<div id='fehler'>" + fb.esc(e.message) + "</div>"; return; }
+  fb.farbenSetzen(baum);
+  document.getElementById("titel").textContent = baum.titel;
+  document.title = "Fehlerbaum – " + baum.titel;
+
+  // ---------- Sitzung ----------
+  let code = fb.param("s", "");
+  const letzteSchl = "fb-letzte-sitzung-" + baumId;
+  if (!code) {
+    try {
+      const l = JSON.parse(localStorage.getItem(letzteSchl) || "null");
+      if (l && Date.now() - l.zeit < 10 * 3600 * 1000) code = l.code; // innerhalb von 10 h weiterführen
+    } catch (e) {}
+  }
+  if (!code) code = fb.neuerCode();
+  localStorage.setItem(letzteSchl, JSON.stringify({ code, zeit: Date.now() }));
+  const url = new URL(location.href); url.searchParams.set("baum", baumId); url.searchParams.set("s", code);
+  history.replaceState(null, "", url);
+  document.getElementById("code").textContent = code;
+
+  // ---------- Zustand ----------
+  const stBlock = fb.stationen(baum);
+  const tische = stBlock.tische || ["A"];
+  const zustandSchl = "fb-zustand-" + code;
+  let zustand = { ursachen: {}, freigabe: {}, lehrkraft: {}, checks: {}, ansicht: tische[0] };
+  try { Object.assign(zustand, JSON.parse(localStorage.getItem(zustandSchl) || "{}")); } catch (e) {}
+  const karten = {}; // "s2A" -> {werte, zeit}
+
+  const verb = fbVerbindung(code);
+  const statusEl = document.getElementById("status");
+  verb.status((s, t) => {
+    statusEl.className = s;
+    statusEl.textContent = s === "verbunden" ? (verb.art === "lokal" ? "lokal (nur dieser Browser)" : "verbunden") : (t || s);
+    if (s === "fehler") melde(t);
+  });
+
+  let sendeTimer = null;
+  function zustandGeaendert() {
+    localStorage.setItem(zustandSchl, JSON.stringify(zustand));
+    zeichnen();
+    clearTimeout(sendeTimer);
+    // kurz sammeln, damit schnelles Antippen nicht viele Nachrichten erzeugt
+    sendeTimer = setTimeout(() => verb.senden({ t: "zustand", von: ich, z: zustand }).catch(() => {}), 500);
+  }
+
+  verb.abonnieren(n => {
+    if (!n || !n.t) return;
+    if (n.t === "karte") {
+      const k = fb.schluessel(n.st, n.tisch);
+      karten[k] = { werte: n.werte || {}, zeit: n.zeit || Date.now() };
+      zeichnen();
+    } else if (n.t === "zustand" && n.von !== ich && n.z) {
+      // Zustand einer früheren Masteransicht (z. B. nach Neuladen oder zweites Gerät)
+      zustand = Object.assign({ ursachen: {}, freigabe: {}, lehrkraft: {}, checks: {}, ansicht: tische[0] }, n.z);
+      localStorage.setItem(zustandSchl, JSON.stringify(zustand));
+      zeichnen();
+    }
+  });
+
+  // ---------- Zeichnen ----------
+  const baumEl = document.getElementById("baum");
+  baumEl.innerHTML = "<div class='spalte' id='sp1'></div><div class='mittelpfeil' id='mpf'>➜</div><div class='spalte' id='sp2'></div>";
+
+  function zeichneBlock(b) {
+    const e = fb.esc;
+    switch (b.typ) {
+      case "symptom":
+        return "<div class='karte symptom'><div class='haupt'>" + e(b.text) + "</div>" + (b.detail ? "<div class='detail'>" + e(b.detail) + "</div>" : "") + "</div>";
+      case "check": {
+        const an = !!zustand.checks[b.id];
+        return "<div class='check" + (an ? " an" : "") + "' data-check='" + e(b.id) + "'><span class='kasten'>" + (an ? "☑" : "☐") + "</span>" + e(b.text) + "</div>";
+      }
+      case "ursachen": {
+        let kreis = false;
+        const h = b.karten.map(k => {
+          const s = zustand.ursachen[k.id] || "";
+          if (s === "kreis") kreis = true;
+          return "<div class='karte ursache " + s + "' data-ursache='" + e(k.id) + "'>" + e(k.text) + "</div>";
+        }).join("");
+        return "<div class='raster' style='grid-template-columns:repeat(" + (b.spalten || 1) + ",1fr)'>" + h + "</div>" +
+          (b.hinweis ? "<div class='hinweis" + (kreis ? " an" : "") + "'>" + e(b.hinweis) + "</div>" : "");
+      }
+      case "stationen": {
+        const ansicht = zustand.ansicht === "alle" ? b.tische : [zustand.ansicht];
+        const h = b.karten.map(st => {
+          const zeilen = ansicht.map(t => {
+            const k = fb.schluessel(st.nr, t);
+            const marke = ansicht.length > 1 ? "<span class='tisch'>" + e(t) + "</span>" : "";
+            if (!karten[k]) return "<div class='wartet' data-st='" + k + "'>" + marke + "wartet auf Tisch " + e(t) + " …</div>";
+            if (!zustand.freigabe[k]) return "<div class='verdeckt' data-st='" + k + "'>" + marke + "Tisch " + e(t) + " ✓ eingegangen – antippen zum Zeigen</div>";
+            return "<div class='zeile' data-st='" + k + "'>" + marke + fb.satzHTML(st, karten[k].werte) + "</div>";
+          }).join("");
+          return "<div class='karte station" + (ansicht.length > 1 ? " zwei" : "") + "'><div class='kopf'><span>St. " + st.nr + " · " + e(st.titel) + "</span></div>" + zeilen + "</div>";
+        }).join("");
+        return "<div class='raster stationen-raster' style='grid-template-columns:repeat(" + (b.spalten || 2) + ",1fr)'>" + h + "</div>";
+      }
+      case "lehrkraft": {
+        const teile = b.karten.map((k, i) => {
+          const an = !!zustand.lehrkraft[k.id];
+          const pf = i > 0 ? "<span class='pf" + (an ? "" : " zu") + "'>" + e(b.pfeil || "→") + "</span>" : "";
+          return pf + "<div class='karte lehrkraft" + (an ? "" : " zu") + "' data-lk='" + e(k.id) + "'>" + (an ? e(k.text) : "Karte " + (i + 1) + " (antippen)") + "</div>";
+        }).join("");
+        return "<div class='kette'>" + teile + "</div>";
+      }
+    }
+    return "";
+  }
+
+  function zeichnen() {
+    const sp = { 1: "", 2: "" };
+    baum.bloecke.forEach(b => { sp[b.spalte || 1] += zeichneBlock(b); });
+    document.getElementById("sp1").innerHTML = sp[1];
+    document.getElementById("sp2").innerHTML = sp[2];
+    const kreis = Object.values(zustand.ursachen).includes("kreis");
+    document.getElementById("mpf").classList.toggle("an", kreis);
+    // Tischwahl
+    const tw = document.getElementById("tischWahl");
+    const optionen = tische.length > 1 ? tische.concat(["alle"]) : tische;
+    tw.innerHTML = optionen.map(t => "<button data-ansicht='" + t + "' class='" + (zustand.ansicht === t ? "aktiv" : "") + "'>" + (t === "alle" ? tische.join("+") : t) + "</button>").join("");
+    // Zähler
+    const gesamt = stBlock.karten.length * tische.length;
+    const da = Object.keys(karten).length;
+    const offen = Object.keys(karten).filter(k => !zustand.freigabe[k]).length;
+    document.getElementById("zaehler").textContent = da + "/" + gesamt + " Karten" + (offen ? " · " + offen + " noch verdeckt" : "");
+  }
+  zeichnen();
+
+  // ---------- Bedienung ----------
+  baumEl.addEventListener("click", ev => {
+    const u = ev.target.closest("[data-ursache]");
+    if (u) {
+      const id = u.dataset.ursache, s = zustand.ursachen[id] || "";
+      zustand.ursachen[id] = s === "" ? "weg" : s === "weg" ? "kreis" : "";
+      return zustandGeaendert();
+    }
+    const st = ev.target.closest("[data-st]");
+    if (st) {
+      const k = st.dataset.st;
+      if (!karten[k]) return;
+      zustand.freigabe[k] = !zustand.freigabe[k];
+      return zustandGeaendert();
+    }
+    const lk = ev.target.closest("[data-lk]");
+    if (lk) { zustand.lehrkraft[lk.dataset.lk] = !zustand.lehrkraft[lk.dataset.lk]; return zustandGeaendert(); }
+    const c = ev.target.closest("[data-check]");
+    if (c) { zustand.checks[c.dataset.check] = !zustand.checks[c.dataset.check]; return zustandGeaendert(); }
+  });
+
+  document.getElementById("tischWahl").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-ansicht]");
+    if (b) { zustand.ansicht = b.dataset.ansicht; zustandGeaendert(); }
+  });
+
+  function qrLink() {
+    const q = new URL("qr.html", location.href);
+    q.searchParams.set("baum", baumId); q.searchParams.set("s", code);
+    const v = fb.param("verbindung", ""); if (v) q.searchParams.set("verbindung", v);
+    return q.href;
+  }
+  document.getElementById("btnQR").onclick = () => window.open(qrLink(), "_blank");
+
+  document.getElementById("btnTest").onclick = async () => {
+    if (!confirm("Beispielkarten für alle noch leeren Tische senden? (Karten, die schon da sind, bleiben unverändert.)")) return;
+    for (const st of stBlock.karten) for (const t of tische) {
+      if (karten[fb.schluessel(st.nr, t)]) continue;
+      await verb.senden({ t: "karte", st: st.nr, tisch: t, werte: st.beispiel || {}, zeit: Date.now(), test: true }).catch(() => {});
+    }
+    melde("Testkarten gesendet");
+  };
+
+  document.getElementById("btnBild").onclick = async () => {
+    document.body.classList.add("export");
+    try {
+      const png = await htmlToImage.toPng(baumEl, { pixelRatio: 2, backgroundColor: "#ffffff" });
+      const a = document.createElement("a");
+      const d = new Date();
+      a.download = "Fehlerbaum_" + baumId + "_" + d.toISOString().slice(0, 10) + ".png";
+      a.href = png; a.click();
+      melde("Bild gespeichert");
+    } catch (e) { melde("Bild konnte nicht erzeugt werden – bitte PDF/Drucken nutzen"); }
+    document.body.classList.remove("export");
+  };
+  document.getElementById("btnDruck").onclick = () => window.print();
+
+  document.getElementById("btnVoll").onclick = () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || function(){}).call(document.documentElement);
+  };
+  const leiste = (an) => document.body.classList.toggle("ohneLeiste", !an);
+  document.getElementById("btnAus").onclick = () => leiste(false);
+  document.getElementById("zeigeLeiste").onclick = () => leiste(true);
+  document.addEventListener("keydown", ev => { if (ev.key === "l" || ev.key === "L") leiste(document.body.classList.contains("ohneLeiste")); });
+
+  document.getElementById("btnNeu").onclick = () => {
+    if (!confirm("Neue Sitzung starten? Der aktuelle Baum bleibt nur als Bild erhalten (vorher „Bild speichern“). Die QR-Codes ändern sich.")) return;
+    const n = new URL(location.href);
+    const neu = fb.neuerCode();
+    localStorage.setItem(letzteSchl, JSON.stringify({ code: neu, zeit: Date.now() }));
+    n.searchParams.set("s", neu);
+    location.href = n.href;
+  };
+
+  let meldTimer;
+  function melde(t) {
+    const m = document.getElementById("meldung"); m.textContent = t; m.classList.add("an");
+    clearTimeout(meldTimer); meldTimer = setTimeout(() => m.classList.remove("an"), 2500);
+  }
+})();
+</script>
+</body>
+</html>
