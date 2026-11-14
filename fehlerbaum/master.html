@@ -11,6 +11,7 @@
     --papier: #F7F5F0; --tinte: #1d2327;
   }
   * { box-sizing: border-box; }
+  html, body { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; background: var(--papier); color: var(--tinte);
     font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; }
   body { display: flex; flex-direction: column; }
@@ -40,7 +41,8 @@
   body.ohneLeiste #zeigeLeiste { display: block; }
 
   /* Baum */
-  #baum { flex: 1; display: grid; grid-template-columns: 40fr 4fr 56fr; gap: calc(var(--u) * 1); padding: calc(var(--u) * 1.6) calc(var(--u) * 2); background: var(--papier); min-height: 0; }
+  #baum { flex: 1; padding: calc(var(--u) * 1.6) calc(var(--u) * 2); background: var(--papier); min-height: 0; position: relative; }
+  #baum.tafel { display: grid; grid-template-columns: 40fr 4fr 56fr; gap: calc(var(--u) * 1); }
   .spalte { display: flex; flex-direction: column; gap: calc(var(--u) * 1.1); min-height: 0; }
   .mittelpfeil { display: flex; align-items: center; justify-content: center; font-size: calc(var(--u) * 5); color: #c6c6c6; transition: color .3s; }
   .mittelpfeil.an { color: var(--tinte); }
@@ -64,6 +66,30 @@
   .ursache.kreis { outline: calc(var(--u) * .45) solid #c62828; outline-offset: calc(var(--u) * .35); border-radius: 50% / 40%; }
   .hinweis { font-size: calc(var(--u) * 2); font-family: "Segoe Print", "Chalkboard SE", "Comic Sans MS", sans-serif; color: #333; text-align: center; visibility: hidden; }
   .hinweis.an { visibility: visible; }
+  .zweig { background: #5E7280; color: #fff; flex-direction: column; }
+  #baum.tafel .zweig { font-size: calc(var(--u) * 1.75); min-height: calc(var(--u) * 5); padding: calc(var(--u) * .5) calc(var(--u) * .8); }
+  #baum.tafel .ursache:not(.zweig) { min-height: calc(var(--u) * 5); font-size: calc(var(--u) * 1.95); padding: calc(var(--u) * .5) calc(var(--u) * .8); }
+  #baum.tafel .spalte { gap: calc(var(--u) * .9); }
+  .zweig .klein { display: block; font-size: .72em; font-weight: 500; opacity: .9; margin-top: .15em; }
+  .zweig.weg::after { filter: invert(1); }
+  .ursache.leerkarte.zweig { border-color: #9aa8b1; color: #7d8c96; }
+  .ursache.leerkarte { background: transparent; border: 2px dashed #c9b25a; box-shadow: none; color: #b39a3c; font-weight: 500; font-size: calc(var(--u) * 1.4); }
+  .ursache.frei { font-style: italic; }
+
+  /* Auswahl der Ursachen (ZFG) */
+  #auswahl { position: fixed; inset: 0; background: rgba(20,25,30,.55); z-index: 20; display: none; align-items: center; justify-content: center; }
+  #auswahl.an { display: flex; }
+  #auswahl .panel { background: #fff; border-radius: 14px; padding: 18px 20px; width: min(560px, 94vw); max-height: 92vh; overflow: auto; box-shadow: 0 10px 40px rgba(0,0,0,.3); font-size: 17px; }
+  #auswahl h3 { margin: 0 0 12px; font-size: 19px; }
+  #auswahl .liste { display: grid; gap: 8px; }
+  #auswahl .liste button { font: inherit; font-size: 19px; font-weight: 600; text-align: left; padding: 12px 14px; border-radius: 10px; border: 2px solid #e2c84a; background: #F6D04D; cursor: pointer; }
+  #auswahl .liste button .nr { display: inline-block; width: 1.6em; color: #7a6510; }
+  #auswahl .liste.zurueck button { background: #fff; border-color: #ddd; font-weight: 500; font-size: 15px; padding: 8px 12px; color: #555; }
+  #auswahl .eigen { display: flex; gap: 8px; margin-top: 12px; }
+  #auswahl .eigen input { flex: 1; font: inherit; font-size: 18px; padding: 10px; border: 2px solid #ccc; border-radius: 10px; }
+  #auswahl .eigen button, #auswahl .unten button { font: inherit; padding: 10px 14px; border-radius: 10px; border: 1px solid #bbb; background: #fff; cursor: pointer; }
+  #auswahl .klein { font-size: 13px; color: #777; margin: 14px 0 6px; }
+  #auswahl .unten { display: flex; justify-content: flex-end; margin-top: 14px; }
 
   .station { background: var(--station); color: #fff; cursor: pointer; user-select: none; display: flex; flex-direction: column; gap: calc(var(--u) * .5); min-height: calc(var(--u) * 9); }
   .station .kopf { font-size: calc(var(--u) * 1.45); opacity: .9; display: flex; justify-content: space-between; gap: 8px; }
@@ -86,11 +112,50 @@
   .lehrkraft { background: var(--lehrkraft); color: #fff; font-size: calc(var(--u) * 2.4); font-weight: 700; flex: 1; text-align: center; cursor: pointer; user-select: none; min-height: calc(var(--u) * 6.5); display: flex; align-items: center; justify-content: center; }
   .lehrkraft.zu { background: transparent; color: #b9b9b9; border: 2px dashed #cfcfcf; box-shadow: none; font-weight: 500; font-size: calc(var(--u) * 1.6); }
   .kette .pf.zu { color: #ddd; }
+  .kette.lang { gap: calc(var(--u) * .6); }
+  .kette.lang .lehrkraft { font-size: calc(var(--u) * 1.55); min-height: calc(var(--u) * 6); padding: calc(var(--u) * .5); }
+  .kette.lang .lehrkraft.zu { font-size: calc(var(--u) * 1.2); }
+  .kette.lang .pf { font-size: calc(var(--u) * 2); }
 
   .stationen-raster { flex: 1; min-height: 0; }
 
+  /* Klassischer Fehlerbaum (wie auf dem Arbeitsblatt): Ebenen von oben nach unten, Linien als SVG.
+     Größen richten sich nach der Fläche des Baums (Container-Einheiten), damit alles auf den Beamer passt. */
+  #baum.klassisch { display: flex; flex-direction: column; justify-content: space-between; container-type: size; padding-top: 1.2vh; padding-bottom: 1.2vh; }
+  #linien { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: visible; }
+  #linien path { fill: none; stroke: #4a4a4a; stroke-width: 3; stroke-linejoin: round; }
+  #linien path.blass { stroke: #cfcfcf; stroke-dasharray: 8 7; stroke-width: 2.5; }
+  .kz { --u: min(1vw, 1.6vh); }
+  @supports (container-type: size) { .kz { --u: min(1cqw, 1.72cqh); } }
+  .kz { display: grid; grid-template-columns: calc(var(--u) * 15) 1fr; align-items: center; position: relative; z-index: 1; }
+  .kz + .kz { margin-top: calc(var(--u) * 2.4); }
+  .kz.nurlabel .klabel { grid-column: 1 / -1; }
+  .klabel .check { font-size: calc(var(--u) * 1.7); white-space: nowrap; }
+  .kinhalt { display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 1.8); }
+  .kreihe { display: flex; justify-content: center; align-items: flex-start; gap: calc(var(--u) * 1.3); width: 100%; }
+  .kzelle { flex: 1; display: flex; flex-direction: column; align-items: stretch; max-width: calc(var(--u) * 26); }
+  .klassisch .symptom { padding: calc(var(--u) * .8) calc(var(--u) * 4); }
+  .klassisch .symptom .haupt { font-size: calc(var(--u) * 2.5); }
+  .klassisch .symptom .detail { font-size: calc(var(--u) * 1.5); }
+  .klassisch .ursache { font-size: calc(var(--u) * 1.6); min-height: calc(var(--u) * 5.2); padding: calc(var(--u) * .6); }
+  .klassisch .hinweis { display: none; align-self: center; margin-top: calc(var(--u) * 2); background: #fff; border: 2px solid #4a4a4a; border-radius: calc(var(--u) * .5);
+    padding: calc(var(--u) * .25) calc(var(--u) * .8); font-size: calc(var(--u) * 1.35); white-space: nowrap; position: relative; z-index: 1; }
+  .klassisch .hinweis.an { display: block; visibility: visible; }
+  .klassisch .kreihe.st .kzelle { max-width: none; }
+  .klassisch .station { min-height: calc(var(--u) * 7); padding: calc(var(--u) * .8) calc(var(--u) * 1.1); }
+  .klassisch .station .kopf { font-size: calc(var(--u) * 1.25); }
+  .klassisch .station .zeile { font-size: calc(var(--u) * 1.75); }
+  .klassisch .station.zwei .zeile { font-size: calc(var(--u) * 1.35); }
+  .klassisch .station .verdeckt, .klassisch .station .wartet { font-size: calc(var(--u) * 1.3); }
+  .klassisch .lkspalte { display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 1.8); }
+  .klassisch .lkreihe { gap: calc(var(--u) * 2.6); align-items: stretch; }
+  .klassisch .lkreihe .kzelle { max-width: calc(var(--u) * 24); }
+  .klassisch .lehrkraft { flex: 1; min-height: calc(var(--u) * 5); font-size: calc(var(--u) * 1.6); padding: calc(var(--u) * .5) calc(var(--u) * .9); }
+  .klassisch .lehrkraft.zu { font-size: calc(var(--u) * 1.3); }
+
   /* Beim Bildexport keine Bedienhinweise */
   body.export .lehrkraft.zu, body.export .station .verdeckt { visibility: hidden; }
+  body.export #linien path.blass, body.export .leerkarte { visibility: hidden; }
 
   #meldung { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: #222; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity .3s; pointer-events: none; }
   #meldung.an { opacity: .92; }
@@ -102,13 +167,15 @@
     html, body { height: auto; background: #fff; }
     #baum { --u: 3.5mm; height: 190mm; background: #fff; }
     .karte { box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .lehrkraft.zu, .station .verdeckt { visibility: hidden; }
+    .lehrkraft.zu, .station .verdeckt, #linien path.blass { visibility: hidden; }
   }
 </style>
 </head>
 <body>
 <div id="leiste">
   <span class="titel" id="titel">Fehlerbaum</span>
+  <span>Ansicht:</span>
+  <span class="gruppe" id="layoutWahl"><button data-layout="klassisch">Baum</button><button data-layout="tafel">Tafel</button></span>
   <span>Tische:</span>
   <span class="gruppe" id="tischWahl"></span>
   <button id="btnQR" title="QR-Codes für die Gruppenkarten">QR-Codes</button>
@@ -163,7 +230,11 @@
   const stBlock = fb.stationen(baum);
   const tische = stBlock.tische || ["A"];
   const zustandSchl = "fb-zustand-" + code;
-  let zustand = { ursachen: {}, freigabe: {}, lehrkraft: {}, checks: {}, ansicht: tische[0] };
+  // Startansicht: aus der Konfiguration ("startansicht": "A", "B" oder "alle"), sonst alle Tische
+  const startAnsicht = stBlock.startansicht || (tische.length > 1 ? "alle" : tische[0]);
+  const startLayout = baum.layout || "klassisch";
+  const LEER = () => ({ ursachen: {}, freigabe: {}, lehrkraft: {}, checks: {}, aufgedeckt: [], freitext: {}, ansicht: startAnsicht, layout: startLayout });
+  let zustand = LEER();
   try { Object.assign(zustand, JSON.parse(localStorage.getItem(zustandSchl) || "{}")); } catch (e) {}
   const karten = {}; // "s2A" -> {werte, zeit}
 
@@ -192,7 +263,7 @@
       zeichnen();
     } else if (n.t === "zustand" && n.von !== ich && n.z) {
       // Zustand einer früheren Masteransicht (z. B. nach Neuladen oder zweites Gerät)
-      zustand = Object.assign({ ursachen: {}, freigabe: {}, lehrkraft: {}, checks: {}, ansicht: tische[0] }, n.z);
+      zustand = Object.assign(LEER(), n.z);
       localStorage.setItem(zustandSchl, JSON.stringify(zustand));
       zeichnen();
     }
@@ -200,23 +271,54 @@
 
   // ---------- Zeichnen ----------
   const baumEl = document.getElementById("baum");
-  baumEl.innerHTML = "<div class='spalte' id='sp1'></div><div class='mittelpfeil' id='mpf'>➜</div><div class='spalte' id='sp2'></div>";
+
+  // Ursachen-Plätze: Bei "aufdecken": true starten alle leer und werden in der Reihenfolge des ZFG gefüllt.
+  const uBlock = baum.bloecke.find(x => x.typ === "ursachen");
+  function ursachenText(id) {
+    if (zustand.freitext[id]) return zustand.freitext[id];
+    const k = uBlock && uBlock.karten.find(x => x.id === id);
+    return k ? k.text : "";
+  }
+  function ursachenPlaetze(b) {
+    if (!b.aufdecken) return b.karten.map(k => ({ id: k.id, text: k.text }));
+    const n = b.karten.length + (b.leer || 0);
+    const auf = zustand.aufgedeckt.filter(id => ursachenText(id));
+    const p = auf.map(id => ({ id, text: ursachenText(id), frei: !!zustand.freitext[id] }));
+    // Sobald eine Ursache eingekreist ist, ist das Eingrenzen fertig: leere Plätze verschwinden
+    const fertig = auf.some(id => zustand.ursachen[id] === "kreis");
+    if (!fertig) while (p.length < Math.max(n, auf.length)) p.push({ leer: true });
+    return p;
+  }
+  const zBlock = baum.bloecke.find(x => x.typ === "zweige");
+  function zweigHTML(k, b, klassisch) {
+    const e = fb.esc;
+    const sichtbar = !b.aufdecken || zustand.aufgedeckt.includes(k.id);
+    const kn = klassisch ? " data-knoten='z-" + e(k.id) + "'" : "";
+    if (!sichtbar) return "<div class='karte ursache zweig leerkarte' data-zweigslot='" + e(k.id) + "'" + kn + " data-zustand='leer'" + (k.weiter ? " data-weiter='1'" : "") + ">?</div>";
+    const s = zustand.ursachen[k.id] || "";
+    return "<div class='karte ursache zweig " + s + "' data-ursache='" + e(k.id) + "'" + kn + " data-zustand='" + s + "'" + (k.weiter ? " data-weiter='1'" : "") + ">" +
+      e(k.text) + (k.detail ? "<span class='klein'>" + e(k.detail) + "</span>" : "") + "</div>";
+  }
+  function leerHTML(knoten) { return "<div class='karte ursache leerkarte' data-slot='1'" + (knoten ? " data-knoten='u-leer' data-zustand='leer'" : "") + ">?</div>"; }
 
   function zeichneBlock(b) {
     const e = fb.esc;
     switch (b.typ) {
       case "symptom":
         return "<div class='karte symptom'><div class='haupt'>" + e(b.text) + "</div>" + (b.detail ? "<div class='detail'>" + e(b.detail) + "</div>" : "") + "</div>";
+      case "zweige":
+        return "<div class='raster' style='grid-template-columns:repeat(" + b.karten.length + ",1fr)'>" + b.karten.map(k => zweigHTML(k, b, false)).join("") + "</div>";
       case "check": {
         const an = !!zustand.checks[b.id];
         return "<div class='check" + (an ? " an" : "") + "' data-check='" + e(b.id) + "'><span class='kasten'>" + (an ? "☑" : "☐") + "</span>" + e(b.text) + "</div>";
       }
       case "ursachen": {
         let kreis = false;
-        const h = b.karten.map(k => {
+        const h = ursachenPlaetze(b).map(k => {
+          if (k.leer) return leerHTML(false);
           const s = zustand.ursachen[k.id] || "";
           if (s === "kreis") kreis = true;
-          return "<div class='karte ursache " + s + "' data-ursache='" + e(k.id) + "'>" + e(k.text) + "</div>";
+          return "<div class='karte ursache " + s + (k.frei ? " frei" : "") + "' data-ursache='" + e(k.id) + "'>" + e(k.text) + "</div>";
         }).join("");
         return "<div class='raster' style='grid-template-columns:repeat(" + (b.spalten || 1) + ",1fr)'>" + h + "</div>" +
           (b.hinweis ? "<div class='hinweis" + (kreis ? " an" : "") + "'>" + e(b.hinweis) + "</div>" : "");
@@ -227,8 +329,8 @@
           const zeilen = ansicht.map(t => {
             const k = fb.schluessel(st.nr, t);
             const marke = ansicht.length > 1 ? "<span class='tisch'>" + e(t) + "</span>" : "";
-            if (!karten[k]) return "<div class='wartet' data-st='" + k + "'>" + marke + "wartet auf Tisch " + e(t) + " …</div>";
-            if (!zustand.freigabe[k]) return "<div class='verdeckt' data-st='" + k + "'>" + marke + "Tisch " + e(t) + " ✓ eingegangen – antippen zum Zeigen</div>";
+            if (!karten[k]) return "<div class='wartet' data-st='" + k + "'>wartet auf Tisch " + e(t) + " …</div>";
+            if (!zustand.freigabe[k]) return "<div class='verdeckt' data-st='" + k + "'>Tisch " + e(t) + " ✓ eingegangen – antippen zum Zeigen</div>";
             return "<div class='zeile' data-st='" + k + "'>" + marke + fb.satzHTML(st, karten[k].werte) + "</div>";
           }).join("");
           return "<div class='karte station" + (ansicht.length > 1 ? " zwei" : "") + "'><div class='kopf'><span>St. " + st.nr + " · " + e(st.titel) + "</span></div>" + zeilen + "</div>";
@@ -241,19 +343,131 @@
           const pf = i > 0 ? "<span class='pf" + (an ? "" : " zu") + "'>" + e(b.pfeil || "→") + "</span>" : "";
           return pf + "<div class='karte lehrkraft" + (an ? "" : " zu") + "' data-lk='" + e(k.id) + "'>" + (an ? e(k.text) : "Karte " + (i + 1) + " (antippen)") + "</div>";
         }).join("");
-        return "<div class='kette'>" + teile + "</div>";
+        return "<div class='kette" + (b.karten.length > 2 ? " lang" : "") + "'>" + teile + "</div>";
       }
     }
     return "";
   }
 
-  function zeichnen() {
+  function zeichneTafel() {
     const sp = { 1: "", 2: "" };
     baum.bloecke.forEach(b => { sp[b.spalte || 1] += zeichneBlock(b); });
-    document.getElementById("sp1").innerHTML = sp[1];
-    document.getElementById("sp2").innerHTML = sp[2];
-    const kreis = Object.values(zustand.ursachen).includes("kreis");
-    document.getElementById("mpf").classList.toggle("an", kreis);
+    const kreis = uBlock ? uBlock.karten.some(k => zustand.ursachen[k.id] === "kreis") || Object.keys(zustand.freitext).some(id => zustand.ursachen[id] === "kreis") : false;
+    baumEl.innerHTML = "<div class='spalte'>" + sp[1] + "</div><div class='mittelpfeil" + (kreis ? " an" : "") + "'>➜</div><div class='spalte'>" + sp[2] + "</div>";
+  }
+
+  // Klassischer Fehlerbaum: Jede Checkfrage beginnt eine Ebene, darunter die Karten.
+  function zeichneKlassisch() {
+    const e = fb.esc;
+    const ebenen = []; let akt = null;
+    baum.bloecke.forEach(b => {
+      if (b.typ === "check") { akt = { check: b, inhalt: [] }; ebenen.push(akt); }
+      else { if (!akt) { akt = { check: null, inhalt: [] }; ebenen.push(akt); } akt.inhalt.push(b); }
+    });
+    const ansicht = zustand.ansicht === "alle" ? (stBlock.tische || ["A"]) : [zustand.ansicht];
+    let h = "<svg id='linien' xmlns='http://www.w3.org/2000/svg'></svg>";
+    ebenen.forEach(eb => {
+      h += "<div class='kz" + (eb.inhalt.length ? "" : " nurlabel") + "'><div class='klabel'>" + (eb.check ? zeichneBlock(eb.check) : "") + "</div><div class='kinhalt'>";
+      eb.inhalt.forEach(b => {
+        if (b.typ === "symptom") {
+          h += "<div class='karte symptom' data-knoten='symptom'><div class='haupt'>" + e(b.text) + "</div>" + (b.detail ? "<div class='detail'>" + e(b.detail) + "</div>" : "") + "</div>";
+        } else if (b.typ === "zweige") {
+          h += "<div class='kreihe zweige'>" + b.karten.map(k => "<div class='kzelle'>" + zweigHTML(k, b, true) + "</div>").join("") + "</div>";
+        } else if (b.typ === "ursachen") {
+          h += "<div class='kreihe'>" + ursachenPlaetze(b).map(k => {
+            if (k.leer) return "<div class='kzelle'>" + leerHTML(true) + "</div>";
+            const s = zustand.ursachen[k.id] || "";
+            return "<div class='kzelle'><div class='karte ursache " + s + (k.frei ? " frei" : "") + "' data-ursache='" + e(k.id) + "' data-knoten='u-" + e(k.id) + "' data-zustand='" + s + "'>" + e(k.text) + "</div>" +
+              (b.hinweis && s === "kreis" ? "<div class='hinweis an' data-knoten='hinweis'>" + e(b.hinweis) + "</div>" : "") + "</div>";
+          }).join("") + "</div>";
+        } else if (b.typ === "stationen") {
+          h += "<div class='kreihe st'>" + b.karten.map(st => {
+            const zeilen = ansicht.map(t => {
+              const k = fb.schluessel(st.nr, t);
+              const marke = ansicht.length > 1 ? "<span class='tisch'>" + e(t) + "</span>" : "";
+              if (!karten[k]) return "<div class='wartet' data-st='" + k + "'>wartet auf Tisch " + e(t) + " …</div>";
+              if (!zustand.freigabe[k]) return "<div class='verdeckt' data-st='" + k + "'>Tisch " + e(t) + " ✓ – antippen</div>";
+              return "<div class='zeile' data-st='" + k + "'>" + marke + fb.satzHTML(st, karten[k].werte) + "</div>";
+            }).join("");
+            return "<div class='kzelle'><div class='karte station" + (ansicht.length > 1 ? " zwei" : "") + "' data-knoten='st-" + st.nr + "'><div class='kopf'><span>St. " + st.nr + " · " + e(st.titel) + "</span></div>" + zeilen + "</div></div>";
+          }).join("") + "</div>";
+        } else if (b.typ === "lehrkraft") {
+          h += "<div class='kreihe lkreihe'>" + b.karten.map((k, i) => {
+            const an = !!zustand.lehrkraft[k.id];
+            return "<div class='kzelle'><div class='karte lehrkraft" + (an ? "" : " zu") + "' data-lk='" + e(k.id) + "' data-knoten='lk-" + i + "' data-an='" + (an ? 1 : 0) + "'>" + (an ? e(k.text) : "Karte " + (i + 1) + " (antippen)") + "</div></div>";
+          }).join("") + "</div>";
+        }
+      });
+      h += "</div></div>";
+    });
+    baumEl.innerHTML = h;
+    requestAnimationFrame(zeichneLinien);
+  }
+
+  // Verbindungslinien: senkrecht nach unten, waagerecht verteilen, senkrecht in die Karte (klassische Baumform)
+  function zeichneLinien() {
+    const svg = document.getElementById("linien");
+    if (!svg) return;
+    const b0 = baumEl.getBoundingClientRect();
+    const box = el => { const r = el.getBoundingClientRect(); return { x: r.left - b0.left + r.width / 2, oben: r.top - b0.top, unten: r.bottom - b0.top }; };
+    const alle = sel => Array.from(baumEl.querySelectorAll(sel));
+    let pfade = "";
+    function verbinde(von, zu, blass) {
+      if (!von.length || !zu.length) return;
+      const v = von.map(box), z = zu.map(box);
+      const unten = Math.max(...v.map(a => a.unten)), oben = Math.min(...z.map(a => a.oben));
+      const ym = unten + (oben - unten) / 2;
+      const kl = blass ? " class='blass' fill='none' stroke='#cfcfcf' stroke-width='2.5' stroke-dasharray='8 7'" : " fill='none' stroke='#4a4a4a' stroke-width='3' stroke-linejoin='round'";
+      v.forEach(a => pfade += "<path" + kl + " d='M" + a.x + " " + a.unten + " V" + ym + "'/>");
+      z.forEach(a => pfade += "<path" + kl + " d='M" + a.x + " " + ym + " V" + a.oben + "'/>");
+      const xs = v.concat(z).map(a => a.x);
+      if (Math.max(...xs) - Math.min(...xs) > 1) pfade += "<path" + kl + " d='M" + Math.min(...xs) + " " + ym + " H" + Math.max(...xs) + "'/>";
+    }
+    const symptom = alle("[data-knoten=symptom]");
+    const ursachen = alle("[data-knoten^='u-']");
+    const kreis = ursachen.filter(u => u.dataset.zustand === "kreis");
+    const stationen = alle("[data-knoten^='st-']");
+    const lk = alle("[data-knoten^='lk-']");
+    const uVoll = ursachen.filter(u => u.dataset.zustand !== "leer"), uLeer = ursachen.filter(u => u.dataset.zustand === "leer");
+    // Mit Zweigebene (z. B. Zündung | Kompression): Symptom → Zweige, Zweig „weiter“ → Ursachen
+    const zweige = alle("[data-knoten^='z-']");
+    let oben = symptom, obenBlass = false;
+    if (zweige.length) {
+      verbinde(symptom, zweige.filter(z => z.dataset.zustand === "leer"), true);
+      verbinde(symptom, zweige.filter(z => z.dataset.zustand !== "leer"), false);
+      const w = zweige.filter(z => z.dataset.weiter === "1");
+      if (w.length) { oben = w; obenBlass = w[0].dataset.zustand === "leer"; }
+    }
+    verbinde(oben, uLeer, true);
+    verbinde(oben, uVoll, obenBlass);
+    // Vom eingekreisten Bauteil zu den Stationen; vorher nur blass angedeutet
+    const hinweis = alle("[data-knoten=hinweis]");
+    if (kreis.length && hinweis.length) { verbinde(kreis, hinweis, false); verbinde(hinweis, stationen, false); }
+    else if (kreis.length) verbinde(kreis, stationen, false);
+
+    if (lk.length) verbinde(stationen, [lk[0]], lk[0].dataset.an !== "1");
+    // Kette waagerecht: Pfeil von Karte zu Karte („weil …“)
+    for (let i = 1; i < lk.length; i++) {
+      const a = lk[i - 1].getBoundingClientRect(), c = lk[i].getBoundingClientRect();
+      const y = (a.top + a.bottom) / 2 - b0.top, x1 = a.right - b0.left, x2 = c.left - b0.left;
+      const kl = lk[i].dataset.an !== "1" ? " class='blass' fill='none' stroke='#cfcfcf' stroke-width='2.5' stroke-dasharray='8 7'" : " fill='none' stroke='#4a4a4a' stroke-width='3' stroke-linejoin='round'";
+      pfade += "<path" + kl + " d='M" + x1 + " " + y + " H" + (x2 - 2) + "'/>" +
+        "<path" + kl + " d='M" + (x2 - 12) + " " + (y - 7) + " L" + (x2 - 2) + " " + y + " L" + (x2 - 12) + " " + (y + 7) + "'/>";
+    }
+    svg.innerHTML = pfade;
+  }
+  window.addEventListener("resize", () => { if (zustand.layout === "klassisch") zeichneLinien(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (zustand.layout === "klassisch") zeichneLinien(); });
+  window.addEventListener("beforeprint", () => { if (zustand.layout === "klassisch") zeichneLinien(); });
+  // Beim Drucken ändert sich das Layout: Linien für die Druckansicht neu berechnen
+  const druckMQ = window.matchMedia("print");
+  (druckMQ.addEventListener ? druckMQ.addEventListener.bind(druckMQ, "change") : druckMQ.addListener.bind(druckMQ))(() => { if (zustand.layout === "klassisch") zeichneLinien(); });
+  window.addEventListener("afterprint", () => { if (zustand.layout === "klassisch") zeichneLinien(); });
+
+  function zeichnen() {
+    baumEl.className = zustand.layout === "tafel" ? "tafel" : "klassisch";
+    if (zustand.layout === "tafel") zeichneTafel(); else zeichneKlassisch();
+    document.querySelectorAll("#layoutWahl button").forEach(b => b.classList.toggle("aktiv", b.dataset.layout === (zustand.layout === "tafel" ? "tafel" : "klassisch")));
     // Tischwahl
     const tw = document.getElementById("tischWahl");
     const optionen = tische.length > 1 ? tische.concat(["alle"]) : tische;
@@ -268,6 +482,9 @@
 
   // ---------- Bedienung ----------
   baumEl.addEventListener("click", ev => {
+    if (ev.target.closest("[data-slot]")) return oeffneAuswahl();
+    const zs = ev.target.closest("[data-zweigslot]");
+    if (zs) return aufdecken(zs.dataset.zweigslot);
     const u = ev.target.closest("[data-ursache]");
     if (u) {
       const id = u.dataset.ursache, s = zustand.ursachen[id] || "";
@@ -287,6 +504,10 @@
     if (c) { zustand.checks[c.dataset.check] = !zustand.checks[c.dataset.check]; return zustandGeaendert(); }
   });
 
+  document.getElementById("layoutWahl").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-layout]");
+    if (b) { zustand.layout = b.dataset.layout; zustandGeaendert(); }
+  });
   document.getElementById("tischWahl").addEventListener("click", ev => {
     const b = ev.target.closest("[data-ansicht]");
     if (b) { zustand.ansicht = b.dataset.ansicht; zustandGeaendert(); }
@@ -309,19 +530,41 @@
     melde("Testkarten gesendet");
   };
 
-  document.getElementById("btnBild").onclick = async () => {
+  async function baumAlsBild() {
     document.body.classList.add("export");
+    try { return await htmlToImage.toPng(baumEl, { pixelRatio: 2, backgroundColor: "#ffffff" }); }
+    finally { document.body.classList.remove("export"); }
+  }
+
+  document.getElementById("btnBild").onclick = async () => {
     try {
-      const png = await htmlToImage.toPng(baumEl, { pixelRatio: 2, backgroundColor: "#ffffff" });
+      const png = await baumAlsBild();
       const a = document.createElement("a");
       const d = new Date();
       a.download = "Fehlerbaum_" + baumId + "_" + d.toISOString().slice(0, 10) + ".png";
       a.href = png; a.click();
       melde("Bild gespeichert");
-    } catch (e) { melde("Bild konnte nicht erzeugt werden – bitte PDF/Drucken nutzen"); }
-    document.body.classList.remove("export");
+    } catch (e) { melde("Bild konnte nicht erzeugt werden – bitte Bildschirmfoto machen"); }
   };
-  document.getElementById("btnDruck").onclick = () => window.print();
+
+  // Drucken/PDF: genau das Bild vom Beamer auf eine A4-Seite quer
+  document.getElementById("btnDruck").onclick = async () => {
+    let png;
+    try { png = await baumAlsBild(); } catch (e) { return window.print(); }
+    const alt = document.getElementById("druckrahmen"); if (alt) alt.remove();
+    const f = document.createElement("iframe");
+    f.id = "druckrahmen";
+    f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+    document.body.appendChild(f);
+    const d = f.contentDocument;
+    d.open();
+    d.write("<!DOCTYPE html><html><head><title>" + fb.esc(baum.titel) + "</title><style>@page{size:A4 landscape;margin:8mm}html,body{margin:0;height:100%}" +
+      "body{display:flex;align-items:center;justify-content:center}img{max-width:100%;max-height:100%;object-fit:contain}</style></head><body><img id='b'></body></html>");
+    d.close();
+    const img = d.getElementById("b");
+    img.onload = () => { f.contentWindow.focus(); f.contentWindow.print(); };
+    img.src = png;
+  };
 
   document.getElementById("btnVoll").onclick = () => {
     if (document.fullscreenElement) document.exitFullscreen();
@@ -330,7 +573,63 @@
   const leiste = (an) => document.body.classList.toggle("ohneLeiste", !an);
   document.getElementById("btnAus").onclick = () => leiste(false);
   document.getElementById("zeigeLeiste").onclick = () => leiste(true);
-  document.addEventListener("keydown", ev => { if (ev.key === "l" || ev.key === "L") leiste(document.body.classList.contains("ohneLeiste")); });
+  document.addEventListener("keydown", ev => {
+    if (ev.target.closest && ev.target.closest("input")) { if (ev.key === "Escape") schliesseAuswahl(); return; }
+    if (ev.key === "l" || ev.key === "L") leiste(document.body.classList.contains("ohneLeiste"));
+    // Zweige per Taste (in der Konfiguration "taste"), z. B. Z = Zündung, K = Kompression
+    if (zBlock) {
+      const z = zBlock.karten.find(k => k.taste && k.taste.toLowerCase() === ev.key.toLowerCase());
+      if (z) { if (zustand.aufgedeckt.includes(z.id)) zuruecknehmen(z.id); else aufdecken(z.id); }
+    }
+    if (ev.key === "Escape") schliesseAuswahl();
+    // Ziffer n: vorbereitete Ursache Nr. n aufdecken bzw. wieder zurücknehmen (für die Klasse unsichtbar)
+    if (uBlock && uBlock.aufdecken && /^[1-9]$/.test(ev.key)) {
+      const k = uBlock.karten[parseInt(ev.key, 10) - 1];
+      if (k) { if (zustand.aufgedeckt.includes(k.id)) zuruecknehmen(k.id); else aufdecken(k.id); }
+    }
+  });
+
+  function aufdecken(id) {
+    if (!zustand.aufgedeckt.includes(id)) zustand.aufgedeckt.push(id);
+    zustandGeaendert();
+  }
+  function zuruecknehmen(id) {
+    zustand.aufgedeckt = zustand.aufgedeckt.filter(x => x !== id);
+    delete zustand.ursachen[id]; delete zustand.freitext[id];
+    zustandGeaendert();
+  }
+
+  const auswahl = document.createElement("div");
+  auswahl.id = "auswahl";
+  document.body.appendChild(auswahl);
+  function schliesseAuswahl() { auswahl.classList.remove("an"); }
+  function oeffneAuswahl() {
+    if (!uBlock) return;
+    const e = fb.esc;
+    const offen = uBlock.karten.map((k, i) => ({ k, i })).filter(x => !zustand.aufgedeckt.includes(x.k.id));
+    const auf = zustand.aufgedeckt.filter(id => ursachenText(id));
+    auswahl.innerHTML = "<div class='panel'><h3>Welche Ursache nennt die Klasse?</h3>" +
+      "<div class='liste'>" + (offen.length ? offen.map(x => "<button data-auf='" + e(x.k.id) + "'><span class='nr'>" + (x.i + 1) + "</span>" + e(x.k.text) + "</button>").join("") : "<i>Alle vorbereiteten Ursachen sind aufgedeckt.</i>") + "</div>" +
+      "<div class='eigen'><input id='eigenText' maxlength='40' placeholder='Eigene Karte (andere Antwort der Klasse)'><button id='eigenOk'>Aufdecken</button></div>" +
+      (auf.length ? "<div class='klein'>Schon aufgedeckt – antippen zum Zurücknehmen:</div><div class='liste zurueck'>" + auf.map(id => "<button data-weg='" + e(id) + "'>↺ " + e(ursachenText(id)) + "</button>").join("") + "</div>" : "") +
+      "<div class='unten'><button id='auswahlZu'>Abbrechen</button></div></div>";
+    auswahl.classList.add("an");
+  }
+  auswahl.addEventListener("click", ev => {
+    if (ev.target === auswahl || ev.target.id === "auswahlZu") return schliesseAuswahl();
+    const a = ev.target.closest("[data-auf]"); if (a) { schliesseAuswahl(); return aufdecken(a.dataset.auf); }
+    const w = ev.target.closest("[data-weg]"); if (w) { schliesseAuswahl(); return zuruecknehmen(w.dataset.weg); }
+    if (ev.target.id === "eigenOk") eigeneKarte();
+  });
+  auswahl.addEventListener("keydown", ev => { if (ev.key === "Enter" && ev.target.id === "eigenText") eigeneKarte(); });
+  function eigeneKarte() {
+    const t = (document.getElementById("eigenText").value || "").trim().slice(0, 40);
+    if (!t) return;
+    const id = "f" + Date.now().toString(36);
+    zustand.freitext[id] = t;
+    schliesseAuswahl();
+    aufdecken(id);
+  }
 
   document.getElementById("btnNeu").onclick = () => {
     if (!confirm("Neue Sitzung starten? Der aktuelle Baum bleibt nur als Bild erhalten (vorher „Bild speichern“). Die QR-Codes ändern sich.")) return;

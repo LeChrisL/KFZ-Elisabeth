@@ -8,10 +8,17 @@
     "lehrkraft": "#E8533A"
   },
   "bloecke": [
-    { "typ": "symptom", "spalte": 1, "text": "Aussetzer Zylinder 2", "detail": "Kompression 5,5 bar" },
+    { "typ": "symptom", "spalte": 1, "text": "Aussetzer Zylinder 2", "detail": "Fehlerspeicher P0302" },
+    {
+      "typ": "zweige", "spalte": 1, "aufdecken": true,
+      "karten": [
+        { "id": "z1", "text": "Zündung", "detail": "Zündspule getauscht – Aussetzer bleibt", "taste": "z" },
+        { "id": "z2", "text": "Kompression zu niedrig", "detail": "Zyl. 2: 5,5 bar", "taste": "k", "weiter": true }
+      ]
+    },
     { "typ": "check", "spalte": 1, "id": "c1", "text": "1 Wo?" },
     {
-      "typ": "ursachen", "spalte": 1, "spalten": 2,
+      "typ": "ursachen", "spalte": 1, "spalten": 2, "aufdecken": true, "leer": 1,
       "hinweis": "Druckverlust: Luft am Auspuff",
       "karten": [
         { "id": "u1", "text": "Kolbenringe verschlissen" },
@@ -23,7 +30,7 @@
     },
     { "typ": "check", "spalte": 2, "id": "c2", "text": "2 Was?" },
     {
-      "typ": "stationen", "spalte": 2, "spalten": 2, "tische": ["A", "B"],
+      "typ": "stationen", "spalte": 2, "spalten": 2, "tische": ["A", "B"], "startansicht": "alle",
       "karten": [
         {
           "nr": 1, "titel": "Die Altteilekiste",
@@ -55,8 +62,10 @@
     {
       "typ": "lehrkraft", "spalte": 2, "pfeil": "→",
       "karten": [
-        { "id": "l1", "text": "Hydroelement klemmt" },
-        { "id": "l2", "text": "Ölschlamm" }
+        { "id": "l0", "text": "Ventil schließt nicht" },
+        { "id": "l1", "text": "Hydroelement klemmt ausgefahren" },
+        { "id": "l2", "text": "Ölschlamm" },
+        { "id": "l3", "text": "Ölservice überfällig (07/2022)" }
       ]
     },
     { "typ": "check", "spalte": 2, "id": "c4", "text": "4 Herr Bauer → Mittwoch" }

@@ -18,6 +18,8 @@
   .qr svg { width: 100%; max-width: 200px; height: auto; display: block; margin: 0 auto; }
   .qr .klein { font-size: 11px; color: #777; margin-top: 4px; word-break: break-all; }
   .qr a { color: inherit; }
+  .qr.lk { border-color: #E8533A; }
+  .qr.lk .st { color: #E8533A; }
   @media print {
     @page { size: A4 portrait; margin: 10mm; }
     .leiste { display: none; }
@@ -61,6 +63,14 @@
       "<a href='" + fb.esc(u.href) + "' target='_blank'>" + q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }) + "</a>" +
       "<div class='klein'>" + fb.esc(u.href) + "</div></div>";
   }));
+  // Fernbedienung für die Lehrkraft (iPad): dieselbe Masteransicht, Auswahl der Ursachen dort statt am Beamer
+  const st_ = new URL("master.html", location.href);
+  st_.searchParams.set("baum", baumId); st_.searchParams.set("s", code);
+  if (verbindung) st_.searchParams.set("verbindung", verbindung);
+  const q2 = qrcode(0, "M"); q2.addData(st_.href); q2.make();
+  h += "<div class='qr lk'><div class='st'>Lehrkraft</div><div class='ti'>Fernbedienung (iPad) – nicht aushängen</div>" +
+    "<a href='" + fb.esc(st_.href) + "' target='_blank'>" + q2.createSvgTag({ cellSize: 4, margin: 2, scalable: true }) + "</a>" +
+    "<div class='klein'>" + fb.esc(st_.href) + "</div></div>";
   document.getElementById("raster").innerHTML = h;
 })();
 </script>

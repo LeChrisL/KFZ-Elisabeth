@@ -28,12 +28,19 @@ Kein Konto, keine Einrichtung nötig. Die Übertragung läuft über ntfy.sh.
 2. **QR-Codes:** Knopf „QR-Codes“ → neue Seite mit 8 Codes (St. 1–4, Tisch A und B).
 3. **Handy:** QR-Code „Station 2 · Tisch A“ scannen → „verbrannt“ eintippen → Absenden.
 4. **iPad:** QR-Code „Station 3 · Tisch A“ scannen → beide Lücken ausfüllen → Absenden.
-5. **Laptop:** Die Karten erscheinen als „✓ eingegangen – antippen zum Zeigen“. Antippen = am Beamer zeigen. Nochmal antippen = wieder verdecken.
+5. **Laptop:** Oben „Ansicht: Baum | Tafel“. **Baum** = klassischer Fehlerbaum von oben nach unten mit Verbindungslinien (Standard), **Tafel** = zwei Spalten wie die Klapptafel. Die Karten erscheinen als „✓ eingegangen – antippen zum Zeigen“. Antippen = am Beamer zeigen. Nochmal antippen = wieder verdecken.
 6. **Handy:** Nach der Freigabe ist die Karte gesperrt. Nach dem Verdecken kann die Gruppe wieder ändern.
-7. **Laptop:** Ursachen antippen: 1× = durchgekreuzt, 2× = eingekreist (dann erscheint „Druckverlust: Luft am Auspuff“ und der Pfeil), 3× = normal. Checkfragen ☐ antippen = abhaken. Rote Karten „Hydroelement klemmt“ und „Ölschlamm“ antippen = einblenden.
-8. **Tische:** Umschalten A / B / A+B.
-9. **Sichern:** „Bild speichern“ (PNG für den Einstieg am Mittwoch) oder „PDF/Drucken“.
-10. **Ausfall testen:** Laptop-Seite neu laden → der Stand kommt zurück. WLAN am Handy kurz aus und wieder an → Karte erneut senden.
+7. **ZFG – Äste aufdecken:** Unter dem Symptom stehen zwei leere graue Kästchen: links **Zündung**, rechts **Kompression zu niedrig**. Antippen oder Taste **Z** / **K** deckt sie auf. Zündung danach antippen = durchkreuzen (Zündspule getauscht, Aussetzer bleibt). Nur unter „Kompression“ geht es weiter zu den Ursachen.
+   **Ursachen aufdecken:** Zu Beginn sind die Ursachen leere „?“-Kästchen (5 vorbereitete + 1 frei). Sie füllen sich in der Reihenfolge, in der die Klasse sie nennt. Drei Wege:
+   - **Taste 1–5 am Laptop:** deckt Ursache Nr. 1–5 auf (1 Kolbenringe, 2 ZKD, 3 Einlassventil, 4 Auslassventil, 5 Riefen). Nochmal drücken = zurücknehmen. Die Klasse sieht keine Liste.
+   - **iPad als Fernbedienung:** auf der QR-Seite den roten Code „Lehrkraft“ mit dem iPad scannen. Dort ein „?“ antippen → Ursache wählen → erscheint am Beamer.
+   - **„?“ am Laptop antippen:** Auswahlliste – Achtung, die sieht die Klasse am Beamer mit.
+   - Unerwartete Antwort: in der Auswahl „Eigene Karte“ eintippen. Falsch aufgedeckt: in der Auswahl unter „Schon aufgedeckt“ zurücknehmen.
+   - Sobald eine Ursache eingekreist ist, verschwinden die übrigen leeren Kästchen.
+8. **Laptop:** Ursachen antippen: 1× = durchgekreuzt, 2× = eingekreist (dann erscheint „Druckverlust: Luft am Auspuff“ und der Pfeil), 3× = normal. Checkfragen ☐ antippen = abhaken. Die 4 roten Karten der Fehlerkette (Ventil schließt nicht → Hydroelement klemmt ausgefahren → Ölschlamm → Ölservice überfällig) einzeln antippen = einblenden.
+9. **Tische:** Start mit A+B (beide Tische untereinander), umschaltbar auf A oder B.
+10. **Sichern:** „Bild speichern“ (PNG für den Einstieg am Mittwoch) oder „PDF/Drucken“ (druckt genau dieses Bild auf A4 quer; im Druckdialog „Als PDF speichern“ wählen).
+11. **Ausfall testen:** Laptop-Seite neu laden → der Stand kommt zurück. WLAN am Handy kurz aus und wieder an → Karte erneut senden.
 
 Ohne Internet ausprobieren: „Probelauf nur in diesem Browser“ und die Karte in einem zweiten Tab öffnen.
 
@@ -44,6 +51,12 @@ Ohne Internet ausprobieren: „Probelauf nur in diesem Browser“ und die Karte 
 - „Leiste aus“ (Taste L) blendet die Knöpfe aus, „Vollbild“ für den Beamer.
 - „Testdaten“ füllt nur leere Tische mit Beispielkarten (zum Üben, nicht in der Stunde).
 - Fallback: laminierte Papier-Lückenkarten (gleicher Lückensatz).
+
+## Interaktive Tafel (z. B. StarBoard)
+
+- Masteransicht im Browser der Tafel öffnen (Chrome oder Edge, aktuelle Version), dann „Vollbild“. Alles lässt sich mit dem Finger antippen.
+- Tasten Z/K und 1–5 brauchen eine Tastatur. An der Tafel deshalb das iPad als Fernbedienung nutzen (roter QR „Lehrkraft“), sonst sieht die Klasse die Auswahlliste.
+- Vorher einmal testen: Lädt die Seite, ist „● verbunden“ grün, stimmt die Schriftgröße?
 
 ## Bekannte Grenzen von ntfy.sh (wichtig für die Schule)
 
@@ -56,6 +69,11 @@ Ohne Internet ausprobieren: „Probelauf nur in diesem Browser“ und die Karte 
 
 `baeume/ventiltrieb.json` kopieren, z. B. als `baeume/aufladung.json`, Texte ändern, dann `master.html?baum=aufladung` öffnen.
 Bausteine (`typ`): `symptom`, `check`, `ursachen`, `stationen`, `lehrkraft`. `spalte` 1 = links, 2 = rechts.
+Startansicht: oben in der Datei `"layout": "klassisch"` (Baum) oder `"tafel"`. Ohne Angabe: Baum.
+Startansicht der Tische: bei `stationen` `"startansicht": "alle"` (oder `"A"`, `"B"`).
+Äste: Baustein `zweige` mit Karten (`text`, `detail`, `taste`; der Ast mit `"weiter": true` führt zu den Ursachen).
+Ursachen aufdecken: im Baustein `ursachen` `"aufdecken": true` und `"leer": 1` (Anzahl freier Kästchen). Ohne `aufdecken` sind alle Ursachen von Anfang an sichtbar.
+Fehlerkette: beliebig viele Karten im Baustein `lehrkraft`, sie stehen nebeneinander mit Pfeilen.
 Lückensatz: Text in Anführungszeichen, Lücke als `{ "feld": "f1", "max": 25 }`, Ankreuzen als `{ "wahl": "w1", "optionen": ["Ja", "Nein"] }`.
 
 **Bitte prüfen:** Die Leitfragen der vier Stationen habe ich passend zu den Lückensätzen formuliert. Bitte mit den Papier-Lückenkarten abgleichen und in `ventiltrieb.json` anpassen.
