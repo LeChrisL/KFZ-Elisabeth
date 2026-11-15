@@ -12,7 +12,7 @@
     {
       "typ": "zweige", "spalte": 1, "aufdecken": true,
       "karten": [
-        { "id": "z1", "text": "Zündung", "detail": "Zündspule getauscht – Aussetzer bleibt", "taste": "z" },
+        { "id": "z1", "text": "Zündung", "detail": "Zündspule mit Zyl. 3 getauscht, Kerzen neu – Aussetzer bleibt auf Zyl. 2", "taste": "z" },
         { "id": "z2", "text": "Kompression zu niedrig", "detail": "Zyl. 2: 5,5 bar", "taste": "k", "weiter": true }
       ]
     },
@@ -34,25 +34,25 @@
       "karten": [
         {
           "nr": 1, "titel": "Die Altteilekiste",
-          "leitfrage": "Kann ein Ventil, das nicht ganz schließt, Kompression verlieren?",
+          "leitfrage": "Ist ein verbogenes Ventil die Ursache?",
           "satz": [ { "wahl": "w1", "optionen": ["Ja", "Nein"] }, ", weil ", { "feld": "f1", "max": 30 } ],
-          "beispiel": { "w1": "Ja", "f1": "es nicht mehr abdichtet" }
+          "beispiel": { "w1": "Nein", "f1": "(Testantwort)" }
         },
         {
           "nr": 2, "titel": "Schadensbilder",
-          "leitfrage": "Welches Schadensbild passt zu Zylinder 2?",
+          "leitfrage": "Welches Schadensbild hat Zylinder 2?",
           "satz": [ "Ventil ist ", { "feld": "f1", "max": 20 } ],
           "beispiel": { "f1": "verbrannt" }
         },
         {
           "nr": 3, "titel": "Ventilarten und Werkstoffe",
-          "leitfrage": "Wie heiß darf ein Auslassventil werden?",
+          "leitfrage": "Wie viel Hitze hält das Auslassventil aus?",
           "satz": [ "bis ", { "feld": "f1", "max": 5, "breite": 4, "modus": "numeric" }, " °C, aber nur wenn ", { "feld": "f2", "max": 30 } ],
           "beispiel": { "f1": "800", "f2": "es die Wärme abgeben kann" }
         },
         {
           "nr": 4, "titel": "Ventilsitz",
-          "leitfrage": "Wie gibt das Ventil seine Wärme ab?",
+          "leitfrage": "Wohin gibt das Ventil seine Wärme ab?",
           "satz": [ "über den ", { "feld": "f1", "max": 20 } ],
           "beispiel": { "f1": "Ventilsitz" }
         }
@@ -61,11 +61,12 @@
     { "typ": "check", "spalte": 2, "id": "c3", "text": "3 Warum?" },
     {
       "typ": "lehrkraft", "spalte": 2, "pfeil": "→",
+      "anker": "rechts", "aufdecken": "rueckwaerts",
       "karten": [
-        { "id": "l0", "text": "Ventil schließt nicht" },
-        { "id": "l1", "text": "Hydroelement klemmt ausgefahren" },
+        { "id": "l3", "text": "Ölservice überfällig (07/2022)" },
         { "id": "l2", "text": "Ölschlamm" },
-        { "id": "l3", "text": "Ölservice überfällig (07/2022)" }
+        { "id": "l1", "text": "Hydroelement klemmt ausgefahren" },
+        { "id": "l0", "text": "Ventil schließt nicht" }
       ]
     },
     { "typ": "check", "spalte": 2, "id": "c4", "text": "4 Herr Bauer → Mittwoch" }

@@ -25,7 +25,7 @@ Kein Konto, keine Einrichtung nötig. Die Übertragung läuft über ntfy.sh.
 ## Probelauf zu Hause (ca. 15 min)
 
 1. **Laptop (= Beamer):** Startseite → „BW3 Ventiltrieb – Masteransicht“. Oben rechts steht der Sitzungscode und „● verbunden“.
-2. **QR-Codes:** Knopf „QR-Codes“ → neue Seite mit 8 Codes (St. 1–4, Tisch A und B).
+2. **QR-Codes:** Knopf „QR-Codes“ → neue Seite mit 8 Codes (St. 1–4, Tisch A und B). Im Unterricht erst in der letzten Runde auslegen – nur die letzte Gruppe an jeder Station füllt die Karte aus.
 3. **Handy:** QR-Code „Station 2 · Tisch A“ scannen → „verbrannt“ eintippen → Absenden.
 4. **iPad:** QR-Code „Station 3 · Tisch A“ scannen → beide Lücken ausfüllen → Absenden.
 5. **Laptop:** Oben „Ansicht: Baum | Tafel“. **Baum** = klassischer Fehlerbaum von oben nach unten mit Verbindungslinien (Standard), **Tafel** = zwei Spalten wie die Klapptafel. Die Karten erscheinen als „✓ eingegangen – antippen zum Zeigen“. Antippen = am Beamer zeigen. Nochmal antippen = wieder verdecken.
@@ -37,7 +37,7 @@ Kein Konto, keine Einrichtung nötig. Die Übertragung läuft über ntfy.sh.
    - **„?“ am Laptop antippen:** Auswahlliste – Achtung, die sieht die Klasse am Beamer mit.
    - Unerwartete Antwort: in der Auswahl „Eigene Karte“ eintippen. Falsch aufgedeckt: in der Auswahl unter „Schon aufgedeckt“ zurücknehmen.
    - Sobald eine Ursache eingekreist ist, verschwinden die übrigen leeren Kästchen.
-8. **Laptop:** Ursachen antippen: 1× = durchgekreuzt, 2× = eingekreist (dann erscheint „Druckverlust: Luft am Auspuff“ und der Pfeil), 3× = normal. Checkfragen ☐ antippen = abhaken. Die 4 roten Karten der Fehlerkette (Ventil schließt nicht → Hydroelement klemmt ausgefahren → Ölschlamm → Ölservice überfällig) einzeln antippen = einblenden.
+8. **Laptop:** Ursachen antippen: 1× = durchgekreuzt, 2× = eingekreist (dann erscheint „Druckverlust: Luft am Auspuff“ und der Pfeil), 3× = normal. Checkfragen ☐ antippen = abhaken. Fehlerkette (rot), Anzeige von links nach rechts „führt zu“: Ölservice überfällig (07/2022) → Ölschlamm → Hydroelement klemmt ausgefahren → Ventil schließt nicht. Aufdecken **von rechts nach links** (jeweils „Warum?“): zuerst „Ventil schließt nicht“ (Karte 1), zuletzt „Ölservice“ (Karte 4).
 9. **Tische:** Start mit A+B (beide Tische untereinander), umschaltbar auf A oder B.
 10. **Sichern:** „Bild speichern“ (PNG für den Einstieg am Mittwoch) oder „PDF/Drucken“ (druckt genau dieses Bild auf A4 quer; im Druckdialog „Als PDF speichern“ wählen).
 11. **Ausfall testen:** Laptop-Seite neu laden → der Stand kommt zurück. WLAN am Handy kurz aus und wieder an → Karte erneut senden.
@@ -73,7 +73,7 @@ Startansicht: oben in der Datei `"layout": "klassisch"` (Baum) oder `"tafel"`. O
 Startansicht der Tische: bei `stationen` `"startansicht": "alle"` (oder `"A"`, `"B"`).
 Äste: Baustein `zweige` mit Karten (`text`, `detail`, `taste`; der Ast mit `"weiter": true` führt zu den Ursachen).
 Ursachen aufdecken: im Baustein `ursachen` `"aufdecken": true` und `"leer": 1` (Anzahl freier Kästchen). Ohne `aufdecken` sind alle Ursachen von Anfang an sichtbar.
-Fehlerkette: beliebig viele Karten im Baustein `lehrkraft`, sie stehen nebeneinander mit Pfeilen.
+Fehlerkette: beliebig viele Karten im Baustein `lehrkraft` in Anzeige-Reihenfolge. `"anker": "rechts"` = Linie von den Stationen kommt rechts an; `"aufdecken": "rueckwaerts"` = Nummerierung der verdeckten Karten von rechts.
 Lückensatz: Text in Anführungszeichen, Lücke als `{ "feld": "f1", "max": 25 }`, Ankreuzen als `{ "wahl": "w1", "optionen": ["Ja", "Nein"] }`.
 
-**Bitte prüfen:** Die Leitfragen der vier Stationen habe ich passend zu den Lückensätzen formuliert. Bitte mit den Papier-Lückenkarten abgleichen und in `ventiltrieb.json` anpassen.
+Leitfragen und Zündungs-Text entsprechen den Papier-Lückenkarten bzw. dem WIS-Protokoll (Stand 15.11.2026). Die Testantwort von Station 1 ist ein Platzhalter.

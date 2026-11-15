@@ -112,7 +112,8 @@
 
   app.innerHTML =
     "<div class='kopf'><div class='klein'><span>Station " + st.nr + "</span><span>Tisch " + e(tisch) + "</span></div><h1>" + e(st.titel) + "</h1></div>" +
-    "<main><p class='leitfrage'>" + e(st.leitfrage || "") + "</p>" +
+    "<main><p class='hinweis' style='margin:0 2px 10px'>Ihr seid die letzte Gruppe an dieser Station. Tragt euer Ergebnis für die ganze Klasse ein.</p>" +
+    "<p class='leitfrage'>" + e(st.leitfrage || "") + "</p>" +
     "<div class='satz' id='satz'>" + satz + "</div>" +
     "<p class='hinweis'>Nur Stichworte, 1–2 Wörter pro Lücke. Keine Namen.</p>" +
     "<button id='senden'>Absenden</button>" +

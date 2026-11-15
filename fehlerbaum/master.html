@@ -301,6 +301,9 @@
   }
   function leerHTML(knoten) { return "<div class='karte ursache leerkarte' data-slot='1'" + (knoten ? " data-knoten='u-leer' data-zustand='leer'" : "") + ">?</div>"; }
 
+  // Fehlerkette: Nummer der Karte in Aufdeck-Reihenfolge ("rueckwaerts" = rechts zuerst)
+  function lkNummer(b, i) { return b.aufdecken === "rueckwaerts" ? b.karten.length - i : i + 1; }
+
   function zeichneBlock(b) {
     const e = fb.esc;
     switch (b.typ) {
@@ -340,8 +343,9 @@
       case "lehrkraft": {
         const teile = b.karten.map((k, i) => {
           const an = !!zustand.lehrkraft[k.id];
-          const pf = i > 0 ? "<span class='pf" + (an ? "" : " zu") + "'>" + e(b.pfeil || "→") + "</span>" : "";
-          return pf + "<div class='karte lehrkraft" + (an ? "" : " zu") + "' data-lk='" + e(k.id) + "'>" + (an ? e(k.text) : "Karte " + (i + 1) + " (antippen)") + "</div>";
+          const vorAn = i > 0 && !!zustand.lehrkraft[b.karten[i - 1].id];
+          const pf = i > 0 ? "<span class='pf" + (an && vorAn ? "" : " zu") + "'>" + e(b.pfeil || "→") + "</span>" : "";
+          return pf + "<div class='karte lehrkraft" + (an ? "" : " zu") + "' data-lk='" + e(k.id) + "'>" + (an ? e(k.text) : "Karte " + lkNummer(b, i) + " (antippen)") + "</div>";
         }).join("");
         return "<div class='kette" + (b.karten.length > 2 ? " lang" : "") + "'>" + teile + "</div>";
       }
@@ -394,7 +398,7 @@
         } else if (b.typ === "lehrkraft") {
           h += "<div class='kreihe lkreihe'>" + b.karten.map((k, i) => {
             const an = !!zustand.lehrkraft[k.id];
-            return "<div class='kzelle'><div class='karte lehrkraft" + (an ? "" : " zu") + "' data-lk='" + e(k.id) + "' data-knoten='lk-" + i + "' data-an='" + (an ? 1 : 0) + "'>" + (an ? e(k.text) : "Karte " + (i + 1) + " (antippen)") + "</div></div>";
+            return "<div class='kzelle'><div class='karte lehrkraft" + (an ? "" : " zu") + "' data-lk='" + e(k.id) + "' data-knoten='lk-" + i + "' data-an='" + (an ? 1 : 0) + "'>" + (an ? e(k.text) : "Karte " + lkNummer(b, i) + " (antippen)") + "</div></div>";
           }).join("") + "</div>";
         }
       });
@@ -445,12 +449,14 @@
     if (kreis.length && hinweis.length) { verbinde(kreis, hinweis, false); verbinde(hinweis, stationen, false); }
     else if (kreis.length) verbinde(kreis, stationen, false);
 
-    if (lk.length) verbinde(stationen, [lk[0]], lk[0].dataset.an !== "1");
+    const lkBlock = baum.bloecke.find(x => x.typ === "lehrkraft");
+    const anker = lk.length ? (lkBlock && lkBlock.anker === "rechts" ? lk[lk.length - 1] : lk[0]) : null;
+    if (anker) verbinde(stationen, [anker], anker.dataset.an !== "1");
     // Kette waagerecht: Pfeil von Karte zu Karte („weil …“)
     for (let i = 1; i < lk.length; i++) {
       const a = lk[i - 1].getBoundingClientRect(), c = lk[i].getBoundingClientRect();
       const y = (a.top + a.bottom) / 2 - b0.top, x1 = a.right - b0.left, x2 = c.left - b0.left;
-      const kl = lk[i].dataset.an !== "1" ? " class='blass' fill='none' stroke='#cfcfcf' stroke-width='2.5' stroke-dasharray='8 7'" : " fill='none' stroke='#4a4a4a' stroke-width='3' stroke-linejoin='round'";
+      const kl = (lk[i].dataset.an !== "1" || lk[i - 1].dataset.an !== "1") ? " class='blass' fill='none' stroke='#cfcfcf' stroke-width='2.5' stroke-dasharray='8 7'" : " fill='none' stroke='#4a4a4a' stroke-width='3' stroke-linejoin='round'";
       pfade += "<path" + kl + " d='M" + x1 + " " + y + " H" + (x2 - 2) + "'/>" +
         "<path" + kl + " d='M" + (x2 - 12) + " " + (y - 7) + " L" + (x2 - 2) + " " + y + " L" + (x2 - 12) + " " + (y + 7) + "'/>";
     }
